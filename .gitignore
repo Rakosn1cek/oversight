@@ -1,0 +1,4 @@
+/target
+/tmp
+*.log
+.hidden_data/target
