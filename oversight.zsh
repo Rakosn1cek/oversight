@@ -4,7 +4,7 @@
 #
 # Author:      Lukas Grumlik - Rakosn1ek
 # Date:        2026-04-19
-# Version:     0.1.0
+# Version:     0.1.1
 #
 # Description: 
 # This wrapper manages the user interface for Oversight. It captures scan 
@@ -16,9 +16,26 @@
 ###############################################################################
 
 sbox() {
+    setopt localoptions rmstarsilent
     local wrapper="$HOME/arch-projects/oversight/target/release/oversight"
-    local session_tmp=$(mktemp -d /tmp/oversight_XXXXXX)
-    trap 'rm -rf "$session_tmp"' EXIT
+    local log_root="$HOME/oversight/logs"
+    
+    # 1. THE JANITOR CHECK
+    # Check if the directory exists and has any files in it
+    if [[ -d "$log_root" && -n "$(ls -A "$log_root")" ]]; then
+        echo -en "\033[1;33m[?]\033[0m Previous logs found. Clear them before starting? (y/N): "
+        read -k 1 res
+        echo "" # Just a newline for cleanliness
+        if [[ "$res" == "y" || "$res" == "Y" ]]; then
+            rm -rf "$log_root"/*
+            echo -e "\033[1;32m[✓]\033[0m Logs cleared."
+        fi
+    fi
+
+    # Create session-specific folder
+    local session_id=$(date +%Y%m%d_%H%M%S)
+    local session_dir="$log_root/session_$session_id"
+    mkdir -p "$session_dir"
 
     # Capture scan findings
     local scan_results
@@ -27,54 +44,52 @@ sbox() {
 
     if [[ $ret -eq 10 ]]; then
         local action
-        # Note: Using a literal newline in the header string here
         action=$(echo -e "Sandbox\nLive\nAnalyze\nAbort" | fzf \
             --height=20 \
             --header-first \
             --header="[!] SECURITY ALERT - Findings for $1:
 $scan_results" \
+            --footer="Session Log: $session_dir" \
             --layout=reverse \
             --border=rounded \
             --prompt="Action required > ")
 
         case "$action" in
             "Sandbox")
-                local audit_log=$(mktemp)
+                local audit_log="$session_dir/audit.log"
                 
-                # Using 'stdbuf' to ensure the output isn't buffered
-                # Redirect 2>&1 to merge errors into the main stream 
-                # Then using 'awk' to act as a real-time filter
-                OVERSIGHT_TMP="$session_tmp" "$wrapper" --no-scan -w . -w "$session_tmp" -- "$@" 2>&1 | while read -r line || [[ -n "$line" ]]; do
-                    if [[ "$line" == *"Permission denied"* ]]; then
-                        # If it's a block, send it to the bucket
-                        echo "$line" >> "$audit_log"
-                    else
-                        # If it's normal output (CPU/RAM), print it now
-                        echo "$line"
-                    fi
-                done
-            
-                # Final Audit Report
+                # Using our perfected filter logic
+	            {
+	                OVERSIGHT_TMP="$session_dir" "$wrapper" --no-scan -r . -w "$session_dir" -- "$@"
+	                wait # Ensure background curl/tasks finish their attempts
+	            } 2>&1 | while read -r line || [[ -n "$line" ]]; do
+	                if [[ "$line" == *"Permission denied"* || \
+	                      "$line" == *"Operation not permitted"* || \
+	                      "$line" == *"it is dangerous to operate"* || \
+	                      "$line" == *"use --no-preserve-root"* ]]; then
+	                    echo "$line" >> "$audit_log"
+	                else
+	                    echo "$line"
+	                fi
+	            done
+
                 if [[ -s "$audit_log" ]]; then
                     echo -e "\n\033[1;34m[i] Oversight Security Audit:\033[0m"
                     echo -e "\033[1;31mThe following unauthorised actions were intercepted and blocked:\033[0m"
                     
-                    # Clean up the shell noise and show the unique blocks
                     sed -E 's/^.*line [0-9]+: //' "$audit_log" | sed -E 's/^[: ]+//' | sort -u | while read -r line; do
                         echo -e "  \033[1;33m➜\033[0m $line"
                     done
                 fi
-                rm -f "$audit_log"
                 ;;
-            "Analyze")
-                ${EDITOR:-nano} "$1"
-                ;;
+            "Live") "$@" ;;
+            "Analyze") ${EDITOR:-nano} "$1" ;;
         esac
         return
     fi
 
-    # Clean run path
-    OVERSIGHT_TMP="$session_tmp" "$wrapper" -w . -w "$session_tmp" -- "$@"
+    # Path for clean scripts
+    OVERSIGHT_TMP="$session_dir" "$wrapper" -w . -w "$session_dir" -- "$@"
 }
 
 _oversight_preexec() {

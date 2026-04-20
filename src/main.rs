@@ -2,7 +2,7 @@
  * Oversight -  Static & Dynamic Security Sandbox
  * * Author:    Lukas Grumlik - Rakosn1cek
  * Created:     2026-04-19
- * Version:     0.1.0
+ * Version:     0.1.1
  * License:     MIT
  * Repository:  ~/arch-projects/oversight
  * * Description: 
