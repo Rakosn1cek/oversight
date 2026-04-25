@@ -2,3 +2,5 @@
 /tmp
 *.log
 .hidden_data/target
+Cargo.lock
+**/*.rs.bk

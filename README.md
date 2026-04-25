@@ -1,14 +1,48 @@
-# Oversight (v0.1.1)
+# Oversight (v0.3.0)
 
-A lightweight security auditor and sandbox for shell scripts. Oversight combines a **Static Analysis** engine (Rust) with **Dynamic Enforcement** (Linux Landlock) to keep your system safe from malicious scripts.
+Oversight is a terminal-based security intelligence tool designed to audit shell scripts and commands before they touch your system. It bridges the gap between "blind trust" and "manual auditing" by providing a high-speed, interactive analysis of both local files and remote scripts via Raw URLs.
+
+## The Mission
+Most system compromises happen because of a "leap of faith". Running a script from a GitHub or a forum post. Oversight gives you "X-ray vision" into these scripts, flagging malicious patterns and explaining the risks in plain English so you can make an informed decision.
 
 ## Features
-- **Regex Scanner:** Identifies dangerous patterns (e.g. rm -rf, obfuscation, network calls).
-- **Kernel Sandbox:** Utilises Landlock to enforce strict filesystem restrictions.
-- **Audit Reports:** Intercepts unauthorised actions and presents a clean security summary.
+- **Interactive TUI Dashboard:** A professional security console that links high-level warnings directly to the offending lines of code.
+- **Remote Fetching Engine:** Audit scripts directly from GitHub, Gist, or any raw URL without saving them to your disk (memory-only analysis).
+- **Educational Auditing:** Every security flag includes a detailed explanation of "why" it is dangerous, helping users learn to spot shady logic.
+- **Universal Shell Support:** Native hooks for **Zsh**, **Bash**, and **Fish** to intercept risky commands in real-time.
+- **Refined Pattern Matching:** Intelligent regex engine using word boundaries to minimise false positives while catching obfuscated threats.
 
-## Installation
-1. Compile the Rust binary: `cargo build --release`
-2. Source the Zsh wrapper: `source oversight.zsh`
+## Dependencies
+Oversight is built in Rust for speed and safety. The following are required for compilation and runtime:
+- **Rust Toolchain:** (cargo, rustc) for building the engine.
+- **OpenSSL:** Required by `reqwest` for secure remote fetching.
+- **FZF:** Required by the shell wrappers for interactive selection menus.
+- **Crates:** `ratatui` (TUI), `tokio` (Async runtime), `reqwest` (HTTP), `clap` (CLI parser), and `regex`.
 
-**Note: Oversight is currently in active development; therefore, no guarantee is provided regarding its functionality or system impact at this stage.**
+## Installation & Setup
+
+1. **Clone the repo:**
+`git clone https://github.com/Rakosn1cek/oversight.git` 
+`cd oversight`
+
+2. **Run the Automated Installer:**
+The installer handles compilation, moves the binary to ~/.local/bin, and injects the necessary hooks into your shell configuration (.zshrc, .bashrc, or config.fish).
+
+```zsh
+chmod +x install.sh
+./install.sh
+```
+3. **Reload your shell:**
+
+`source ~/.zshr` or your respective shell config
+
+**Usage**
+- **Audit a local script**: `oversight ./install.sh`
+- **Audit a remote URL**: `oversight https://raw.githubusercontent.com/user/repo/main/setup.sh`
+- **Live Protection**: Simply type a command like `curl ... | bash` and Oversight will automatically intercept it and offer an audit.
+
+---
+
+> *Note: Oversight is an advisory tool. While it uses robust regex pattern matching, no security tool is 100% bulletproof. Always use the "Final Verdict" as a guide and review the highlighted code manually if you are unsure about a source.*
+
+> *Note2: Oversight is still in active development; therefore, no guarantee is provided regarding its functionality or system impact at this stage.*
