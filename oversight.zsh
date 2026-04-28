@@ -1,33 +1,29 @@
 #!/usr/bin/env zsh
 ###############################################################################
-# Oversight Shell Wrapper v0.3.0
+# Oversight Shell Wrapper v0.3.5
 #
 # Author:       Lukas Grumlik - Rakosn1cek
-# Description:  Interecepts risky commands and routes scripts to the 
+# Description:  Intercepts risky commands and routes them to the 
 #               Oversight Analysis TUI.
 ###############################################################################
 
 oversight() {
-    local wrapper="$HOME/arch-projects/oversight/target/release/oversight"
-    local log_root="$HOME/oversight/logs"
+    # Point to the permanent installation directory
+    local binary="$HOME/.local/bin/oversight"
     
     if [[ -z "$1" ]]; then
-        echo "Usage: sbox <script_path_or_url>"
+        echo "Usage: oversight <script_path_or_url>"
         return 1
     fi
 
-    # Create session log directory if needed
-    mkdir -p "$log_root"
-
-    # Launch the Rust TUI directly. 
-    # The Rust binary now handles the UI, Fetching, and Analysis.
-    "$wrapper" "$@"
+    # Launch the Rust TUI
+    "$binary" "$@"
 }
 
-# This function watches every command you type in your shell
+# Automatic interceptor logic
 _oversight_preexec() {
     local user_cmd="$1"
-    # Detects pipes to shell or destructive deletions
+    # Basic detection to trigger the FZF selection
     local risky_regex="(curl|wget).+\|( *bash| *sh| *zsh)|rm +-rf +/"
 
     if [[ "$user_cmd" =~ $risky_regex ]]; then
@@ -43,26 +39,22 @@ _oversight_preexec() {
             "Audit Command")
                 echo -e "\033[1;34m[Oversight]\033[0m Passing to auditor..."
                 
-                # If it's a curl/wget pipe, we try to extract the URL to audit it
+                # Extract URL for remote auditing
                 if [[ "$user_cmd" =~ "(https?://[^ ]+)" ]]; then
                     local remote_url="${match[1]}"
-                    sbox "$remote_url"
+                    # Call the function defined above
+                    oversight "$remote_url"
                 else
-                    # Otherwise, just audit the raw command string if possible
-                    # (Future update: allow passing raw strings to sbox)
-                    echo "Audit for raw strings coming in v0.3.1"
+                    echo "Audit for raw strings coming in v0.4.0"
                 fi
-                return 1 # Stop the original command from running
+                return 1 # Prevent original command execution
                 ;;
             "Abort"|"")
-                return 1 # Stop the command
+                return 1 
                 ;;
             "Run Normally")
-                return 0 # Let the command proceed
+                return 0 
                 ;;
         esac
     fi
 }
-
-# To enable the automatic interceptor, add this to your .zshrc:
-# add-zsh-hook preexec _oversight_preexec

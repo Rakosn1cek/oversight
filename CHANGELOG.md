@@ -2,6 +2,32 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [0.3.5] - 2026-04-28
+
+### Added
+- **Multi-Language Support:** Expanded the auditing engine to support Python (.py) alongside Shell scripts, targeting cross-language risks like subprocess spawning and socket creation.
+- **Context-Aware Auditing:** Implemented an 11-line code window (5 before, 5 after) for every finding to reveal variable definitions and logic blocks.
+- **Syntax Highlighting:** Added Yellow/Bold highlighting for the specific flagged line within the context block for better scannability.
+- **Dynamic Rules Engine:** Decoupled security patterns from the source code. Patterns are now stored in an external `rules.json` file for easier updates without recompilation.
+- **Enhanced Analysis Metadata:** Audit findings now include categories and reference URLs to provide users with deeper context on specific security risks.
+- **Reference Support in TUI:** The analysis view now displays external documentation links for every flagged security pattern.
+- **JSON Serialization:** Integrated `serde` and `serde_json` for robust management of the external security database.
+
+### Changed
+- **TUI Rendering Logic:** Refactored the Code Context view to handle multi-line Paragraph widgets and styled Line/Span elements.
+- **Architectural Shift:** Moved security intelligence logic from hardcoded Rust enums to a flexible JSON-driven data structure.
+- **Optimised Deployment:** Updated the installer to handle multi-path deployment, ensuring `rules.json` is correctly placed in `~/.local/share/oversight/`.
+- **Release Profile Default:** Standardised the installer to build the binary using the `--release` profile for maximum scanning performance.
+- **Improved Shell Wrappers:** Refined **Bash**, **Zsh**, and **Fish** hooks to point to consolidated share paths and match the project's updated naming convention.
+
+### Fixed
+- **TUI Indentation:** Disabled automatic trimming in the Paragraph widget to preserve code structure and indentation for Python/Shell scripts.
+- **Rule Path Resolution:** Resolved an issue where the binary would fail to find security patterns if executed from outside the installation directory.
+- **TUI Type Mismatch:** Fixed a bug where string-based severity levels from the rules engine weren't correctly mapping to UI colours.
+- **Installer Logic Gap:** Patched the setup script to ensure the local rules database is deployed alongside the binary and shell hooks.
+
+---
+
 ## [0.3.0] - 2026-04-25
 
 ### Added

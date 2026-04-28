@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# Oversight Installer v0.3.0
+# Oversight Installer v0.3.5
 #
 # Author: Lukas Grumlik - Rakosn1cek
 # Distro-agnostic, shell-aware setup script.
@@ -33,7 +33,18 @@ mkdir -p "$BIN_DIR"
 cp target/release/oversight "$BIN_DIR/oversight"
 echo -e "${GREEN}[✓]${NC} Binary deployed to $BIN_DIR"
 
-# 4. SHELL DETECTION & INTEGRATION
+# 4. DATA & SHELL INTEGRATION
+SUPPORT_DIR="$HOME/.local/share/oversight"
+mkdir -p "$SUPPORT_DIR"
+
+# DEPLOY RULES DATA (Crucial for Phase 1)
+if [ -f "rules.json" ]; then
+    cp rules.json "$SUPPORT_DIR/rules.json"
+    echo -e "${GREEN}[✓]${NC} Security rules deployed to $SUPPORT_DIR"
+else
+    echo -e "${RED}[!] Warning:${NC} rules.json not found in current directory. Tool will use embedded defaults."
+fi
+
 CURRENT_SHELL=$(basename "$SHELL")
 CONFIG_FILE=""
 HOOK_SOURCE=""
@@ -57,10 +68,12 @@ case "$CURRENT_SHELL" in
 esac
 
 if [ -n "$CONFIG_FILE" ]; then
-    # Create the support directory for shell scripts
-    SUPPORT_DIR="$HOME/.local/share/oversight"
-    mkdir -p "$SUPPORT_DIR"
-    cp "$HOOK_SOURCE" "$SUPPORT_DIR/"
+    # Deploy shell-specific hooks
+    if [ -f "$HOOK_SOURCE" ]; then
+        cp "$HOOK_SOURCE" "$SUPPORT_DIR/"
+    else
+         echo -e "${RED}[!] Error:${NC} $HOOK_SOURCE not found. Hook deployment failed."
+    fi
 
     # Check if already integrated
     if ! grep -q "oversight" "$CONFIG_FILE"; then
@@ -86,4 +99,3 @@ fi
 # 5. FINAL VERDICT
 echo -e "\n${GREEN}Installation Complete!${NC}"
 echo -e "Please restart your terminal or run: ${YELLOW}source $CONFIG_FILE${NC}"
-echo -e "Try it out with: ${BLUE}oversight https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh${NC}"

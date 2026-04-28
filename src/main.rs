@@ -1,18 +1,20 @@
 /*
- * Oversight v0.3.0 - Security Intelligence & Audit Engine
+ * Oversight - Security Intelligence & Audit Engine
  * Author:  Lukas Grumlik - Rakosn1cek
  * Created: 2026-04-19
- * Version: 0.3.0
+ * Version: 0.3.5
  * Description: 
  * A static analysis tool that audits local scripts and remote Raw URLs.
- * Designed to educate users on malicious patterns before execution.
+ * Uses a dynamic rules engine to educate users on malicious patterns.
  * Use UP/DOWN to navigate, 'q' or ESC to exit.
  */
 
 use clap::Parser;
-use regex::Regex;
 use std::{fs, io};
 use std::path::PathBuf;
+mod rules;
+use rules::{load_rules, Rule};
+use regex::Regex;
 
 // TUI Imports
 use ratatui::{
@@ -37,29 +39,14 @@ struct Args {
     output: Option<PathBuf>,
 }
 
-#[derive(Debug, Clone)]
-enum Severity {
-    Critical,
-    High,
-    Medium,
-    #[allow(dead_code)]
-    Low,
-}
-
-struct RedFlag {
-    pattern: &'static str,
-    name: &'static str,
-    explanation: &'static str,
-    severity: Severity,
-}
-
-#[derive(Debug, Clone)]
-struct AuditFinding {
-    line_no: usize,
-    code_snippet: String,
-    name: String,
-    explanation: String,
-    severity: Severity,
+pub struct AuditFinding {
+    pub line_no: usize,
+    pub code_snippet: String,
+    pub name: String,
+    pub category: String,
+    pub explanation: String,
+    pub severity: String,
+    pub reference: String,
 }
 
 // --- APP STATE ---
@@ -93,59 +80,52 @@ impl App {
     }
 }
 
-// --- ENGINE LOGIC ---
-
-fn get_security_database() -> Vec<RedFlag> {
-    vec![
-        RedFlag {
-            pattern: r"rm\s+-[rf]{1,2}\s+.*[/$\*]",
-            name: "Recursive Deletion",
-            explanation: "Attempts to delete folders permanently. If targeted at system or home directories, it results in total data loss.",
-            severity: Severity::Critical,
-        },
-        RedFlag {
-            pattern: r"/.ssh/|/etc/shadow|/etc/passwd|/etc/sudoers",
-            name: "Sensitive File Access",
-            explanation: "Accessing files that store private security keys or passwords. Common step in identity theft.",
-            severity: Severity::Critical,
-        },
-        RedFlag {
-            pattern: r"\b(curl|wget|nc|socat)\b|/dev/tcp|/dev/udp",
-            name: "Network Activity",
-            explanation: "Reaching out to the internet. Could be used to exfiltrate data or download further malware.",
-            severity: Severity::High,
-        },
-        RedFlag {
-            pattern: r"\|\s*(bash|sh|zsh|source|\.)",
-            name: "Pipe to Shell",
-            explanation: "Downloads or generates code and runs it immediately. You cannot verify the code before execution.",
-            severity: Severity::High,
-        },
-        RedFlag {
-            pattern: r"base64\s+-(d|-decode)|eval\s+|exec\s+",
-            name: "Obfuscated Logic",
-            explanation: "Hiding true intentions using encoding. Common tactic to bypass simple security scanners.",
-            severity: Severity::Medium,
-        },
-    ]
-}
-
 fn perform_analysis(content: &str) -> Vec<AuditFinding> {
     let mut findings = Vec::new();
-    let database = get_security_database();
-    let compiled: Vec<(&RedFlag, Regex)> = database.iter().map(|f| (f, Regex::new(f.pattern).unwrap())).collect();
+    let rules = load_rules();
+    // Collect lines into a vector so we can access lines by index for context
+    let lines: Vec<&str> = content.lines().collect();
 
-    for (idx, line) in content.lines().enumerate() {
+    let compiled_rules: Vec<(&Rule, Regex)> = rules
+        .iter()
+        .filter_map(|r| {
+            match Regex::new(&r.pattern) {
+                Ok(re) => Some((r, re)),
+                Err(_) => {
+                    eprintln!("Warning: Skipping invalid regex pattern in rule: {}", r.name);
+                    None
+                }
+            }
+        })
+        .collect();
+
+    for (idx, line) in lines.iter().enumerate() {
         let trimmed = line.trim();
-        if trimmed.is_empty() || trimmed.starts_with('#') { continue; }
-        for (flag, re) in &compiled {
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+
+        for (rule, re) in &compiled_rules {
             if re.is_match(trimmed) {
+                // Determine the context window (2 lines before, 2 lines after)
+                let start = if idx >= 5 { idx - 5 } else { 0 };
+                let end = std::cmp::min(idx + 6, lines.len());
+                
+                let mut context_block = String::new();
+                for i in start..end {
+                    // Add a marker to the actual flagged line
+                    let indicator = if i == idx { "> " } else { "  " };
+                    context_block.push_str(&format!("{}{}\n", indicator, lines[i]));
+                }
+
                 findings.push(AuditFinding {
                     line_no: idx + 1,
-                    code_snippet: trimmed.to_string(),
-                    name: flag.name.to_string(),
-                    explanation: flag.explanation.to_string(),
-                    severity: flag.severity.clone(),
+                    code_snippet: context_block, // Store the block instead of just the line
+                    name: rule.name.to_string(),
+                    category: rule.category.to_string(),
+                    explanation: rule.explanation.to_string(),
+                    severity: rule.severity.to_string(),
+                    reference: rule.reference.to_string(),
                 });
             }
         }
@@ -197,13 +177,14 @@ fn ui(f: &mut ratatui::Frame, app: &mut App) {
 
     // --- CASE 2: FINDINGS DETECTED ---
     let items: Vec<ListItem> = app.findings.iter().map(|f| {
-        let color = match f.severity {
-            Severity::Critical => Color::Red,
-            Severity::High => Color::LightRed,
-            Severity::Medium => Color::Yellow,
-            Severity::Low => Color::Blue,
+        let color = match f.severity.as_str() {
+            "Critical" => Color::Red,
+            "High" => Color::LightRed,
+            "Medium" => Color::Yellow,
+            "Low" => Color::Blue,
+            _ => Color::Gray,
         };
-        ListItem::new(format!("[{:?}] {}", f.severity, f.name)).style(Style::default().fg(color))
+        ListItem::new(format!("[{}] {}", f.severity, f.name)).style(Style::default().fg(color))
     }).collect();
 
     let list = List::new(items)
@@ -215,14 +196,26 @@ fn ui(f: &mut ratatui::Frame, app: &mut App) {
     if let Some(sel) = app.state.selected() {
         let finding = &app.findings[sel];
         
-        // Render Code Context
-        let code_para = Paragraph::new(format!("\n Line {}:\n\n {}", finding.line_no, finding.code_snippet))
-            .block(Block::default().borders(Borders::ALL).title(" Code Context "));
+        // Convert the context string into styled lines
+        let lines: Vec<Line> = finding.code_snippet.lines().map(|l| {
+            if l.starts_with('>') {
+                // Highlight the flagged line in Yellow for clear visibility
+                Line::from(Span::styled(l, Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)))
+            } else {
+                // Keep the surrounding context lines in a subtle Gray
+                Line::from(Span::styled(l, Style::default().fg(Color::Gray)))
+            }
+        }).collect();
+    
+        let code_para = Paragraph::new(lines)
+            .block(Block::default().borders(Borders::ALL).title(" Code Context "))
+            .wrap(Wrap { trim: false });
+        
         f.render_widget(code_para, main_chunks[1]);
 
         // Determine Verdict Message
         let has_critical_or_high = app.findings.iter().any(|f| 
-            matches!(f.severity, Severity::Critical) || matches!(f.severity, Severity::High)
+            f.severity == "Critical" || f.severity == "High"
         );
 
         let (verdict_msg, verdict_color) = if has_critical_or_high {
@@ -234,6 +227,7 @@ fn ui(f: &mut ratatui::Frame, app: &mut App) {
         // Render Analysis & Verdict Footer
         let analysis_text = vec![
             Line::from(finding.explanation.as_str()),
+            Line::from(format!("Ref: {}", finding.reference)), // Added reference link
             Line::from(""),
             Line::from(Span::styled(verdict_msg, Style::default().fg(verdict_color).add_modifier(Modifier::BOLD))),
         ];

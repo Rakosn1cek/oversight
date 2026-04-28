@@ -1,4 +1,4 @@
-# Oversight (v0.3.0)
+# Oversight (v0.3.5)
 
 Oversight is a terminal-based security intelligence tool designed to audit shell scripts and commands before they touch your system. It bridges the gap between "blind trust" and "manual auditing" by providing a high-speed, interactive analysis of both local files and remote scripts via Raw URLs.
 
@@ -6,11 +6,14 @@ Oversight is a terminal-based security intelligence tool designed to audit shell
 Most system compromises happen because of a "leap of faith". Running a script from a GitHub or a forum post. Oversight gives you "X-ray vision" into these scripts, flagging malicious patterns and explaining the risks in plain English so you can make an informed decision.
 
 ## Features
-- **Interactive TUI Dashboard:** A professional security console that links high-level warnings directly to the offending lines of code.
-- **Remote Fetching Engine:** Audit scripts directly from GitHub, Gist, or any raw URL without saving them to your disk (memory-only analysis).
-- **Educational Auditing:** Every security flag includes a detailed explanation of "why" it is dangerous, helping users learn to spot shady logic.
-- **Universal Shell Support:** Native hooks for **Zsh**, **Bash**, and **Fish** to intercept risky commands in real-time.
-- **Refined Pattern Matching:** Intelligent regex engine using word boundaries to minimise false positives while catching obfuscated threats.
+* **Dynamic Rules Engine**: Patterns are externalised in `rules.json`, allowing for real-time security updates across different scripting languages without recompiling the binary.
+* **Context-Aware Auditing**: Provides a multi-line code window (11 lines) around every finding, ensuring variable definitions and function headers are visible during the review.
+* **Multi-Language Support**: Unified security analysis for **Shell (.sh, .zsh)** and **Python (.py)** scripts, targeting cross-language risks like subprocess execution and dynamic evaluation.
+* **Interactive TUI Dashboard**: A professional security console featuring syntax-highlighted findings (Yellow/Bold) linked directly to the code context.
+* **Remote Fetching Engine**: Audit scripts directly from GitHub, Gist, or any raw URL without saving them to your disk via memory-only analysis.
+* **Educational Auditing**: Every security flag includes a detailed explanation and external references to help users learn to spot and understand malicious patterns.
+* **Refined Pattern Matching**: Intelligent regex engine using word boundaries to minimise false positives while identifying obfuscated threats.
+* **Universal Shell Integration**: Native hooks for **Zsh**, **Bash**, and **Fish** to intercept risky commands in real-time before they execute.
 
 ## Dependencies
 Oversight is built in Rust for speed and safety. The following are required for compilation and runtime:
@@ -18,6 +21,7 @@ Oversight is built in Rust for speed and safety. The following are required for 
 - **OpenSSL:** Required by `reqwest` for secure remote fetching.
 - **FZF:** Required by the shell wrappers for interactive selection menus.
 - **Crates:** `ratatui` (TUI), `tokio` (Async runtime), `reqwest` (HTTP), `clap` (CLI parser), and `regex`.
+- **Serde:** Required for JSON ruleset parsing.
 
 ## Installation & Setup
 
@@ -35,6 +39,11 @@ chmod +x install.sh
 3. **Reload your shell:**
 
 `source ~/.zshr` or your respective shell config
+
+## Files & Locations
+- **Binary**: ~/.local/bin/oversight
+- **Rules Database**: ~/.local/share/oversight/rules.json
+- **Shell Hooks**: ~/.local/share/oversight/oversight.[zsh|bash|fish]
 
 **Usage**
 - **Audit a local script**: `oversight ./install.sh`
