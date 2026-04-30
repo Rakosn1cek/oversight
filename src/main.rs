@@ -83,7 +83,6 @@ impl App {
 fn perform_analysis(content: &str) -> Vec<AuditFinding> {
     let mut findings = Vec::new();
     let rules = load_rules();
-    // Collect lines into a vector so we can access lines by index for context
     let lines: Vec<&str> = content.lines().collect();
 
     let compiled_rules: Vec<(&Rule, Regex)> = rules
@@ -107,7 +106,6 @@ fn perform_analysis(content: &str) -> Vec<AuditFinding> {
 
         for (rule, re) in &compiled_rules {
             if re.is_match(trimmed) {
-                // Determine the context window (2 lines before, 2 lines after)
                 let start = if idx >= 5 { idx - 5 } else { 0 };
                 let end = std::cmp::min(idx + 6, lines.len());
                 
