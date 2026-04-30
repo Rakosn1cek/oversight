@@ -1,5 +1,10 @@
 # Oversight (v0.3.5)
 
+[![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/oversight?style=flat&color=gold)](https://github.com/Rakosn1cek/oversight)
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
+![License](https://img.shields.io/github/license/Rakosn1cek/oversight)
+![Rust](https://img.shields.io/badge/Language-Rust-orange)
+
 Oversight is a terminal-based security intelligence tool designed to audit shell scripts and commands before they touch your system. It bridges the gap between "blind trust" and "manual auditing" by providing a high-speed, interactive analysis of both local files and remote scripts via Raw URLs.
 
 ## The Mission
@@ -55,3 +60,12 @@ chmod +x install.sh
 > *Note: Oversight is an advisory tool. While it uses robust regex pattern matching, no security tool is 100% bulletproof. Always use the "Final Verdict" as a guide and review the highlighted code manually if you are unsure about a source.*
 
 > *Note2: Oversight is still in active development; therefore, no guarantee is provided regarding its functionality or system impact at this stage.*
+
+## Support & Contributions
+If you would like to support or contribute to the project you are more than welcome.
+
+If you would like to discuss or ask questions about Oversight please join my Discord server [Mend | Oversight | XC Hub](https://discord.gg/GFk45RdS)
+
+## License
+MIT © 2026 Rakosn1cek. Attribution is required for any redistribution or derivative works.
+ 
