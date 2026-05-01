@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.4.1",
   "last_updated": "2026-05-01",
   "rules": [
     {
@@ -105,6 +105,14 @@
       "severity": "Medium",
       "explanation": "Attempting to install a Rust crate via cargo.",
       "reference": "https://crates.io/"
+    },
+    {
+    "name": "Potential Command Obfuscation",
+    "category": "Obfuscation",
+    "pattern": "([a-zA-Z_]+)=['"]?[^'"]+['"]?;.*\$\1",
+    "severity": "High",
+    "explanation": "The script appears to be constructing commands via variables. This is often used to mask malicious intent from static analysis. Proceed with caution.",
+    "reference": "https://attack.mitre.org/techniques/T1027/"
     }
   ]
 }

@@ -2,6 +2,11 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [0.4.1] 2026-05-02
+- Added Potential Command Obfuscation category to rules.json
+
+---
+
 ## [0.4.0] 2026-05-01
 - Added vulnerability intelligence engine via `OSV.dev API` integration.
 - Implemented network communication logic within a dedicated intel module.

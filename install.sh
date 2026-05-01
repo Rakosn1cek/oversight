@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# Oversight Installer v0.4.0
+# Oversight Installer v0.4.1
 #
 # Author: Lukas Grumlik - Rakosn1cek
 # Distro-agnostic, shell-aware setup script.

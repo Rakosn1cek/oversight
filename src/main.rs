@@ -2,7 +2,7 @@
  * Oversight - Security Intelligence & Audit Engine
  * Author:  Lukas Grumlik - Rakosn1cek
  * Created: 2026-04-19
- * Version: 0.4.0
+ * Version: 0.4.1
  * Description: 
  * A static analysis tool that audits local scripts and remote Raw URLs.
  * Uses a dynamic rules engine to educate users on malicious patterns.

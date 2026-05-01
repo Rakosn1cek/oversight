@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# Oversight Shell Wrapper v0.4.0 (Bash)
+# Oversight Shell Wrapper v0.4.1 (Bash)
 #
 # Author:       Lukas Grumlik - Rakosn1cek
 # Description:  Intercepts risky commands and routes them to the 
