@@ -1,4 +1,4 @@
-# Oversight (v0.3.5)
+# Oversight (v0.4.0)
 
 [![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/oversight?style=flat&color=gold)](https://github.com/Rakosn1cek/oversight)
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
@@ -19,13 +19,14 @@ Most system compromises happen because of a "leap of faith". Running a script fr
 * **Educational Auditing**: Every security flag includes a detailed explanation and external references to help users learn to spot and understand malicious patterns.
 * **Refined Pattern Matching**: Intelligent regex engine using word boundaries to minimise false positives while identifying obfuscated threats.
 * **Universal Shell Integration**: Native hooks for **Zsh**, **Bash**, and **Fish** to intercept risky commands in real-time before they execute.
++ **Vulnerability Intelligence**: Integrated real-time scanning for known CVEs using the OSV.dev API, triggering automatically when supported package installation commands are detected.
 
 ## Dependencies
 Oversight is built in Rust for speed and safety. The following are required for compilation and runtime:
 - **Rust Toolchain:** (cargo, rustc) for building the engine.
 - **OpenSSL:** Required by `reqwest` for secure remote fetching.
 - **FZF:** Required by the shell wrappers for interactive selection menus.
-- **Crates:** `ratatui` (TUI), `tokio` (Async runtime), `reqwest` (HTTP), `clap` (CLI parser), and `regex`.
+- **Crates:** `ratatui` (TUI), `tokio` (Async runtime), `reqwest` (HTTP), `clap` (CLI parser), `regex`, `serde`, and `serde_json`.
 - **Serde:** Required for JSON ruleset parsing.
 
 ## Installation & Setup

@@ -1,6 +1,6 @@
 {
-  "version": "0.3.5",
-  "last_updated": "2026-04-28",
+  "version": "0.4.0",
+  "last_updated": "2026-05-01",
   "rules": [
     {
       "name": "Root-Level File Destruction",
@@ -91,12 +91,20 @@
       "reference": "https://pybit.es/articles/climbing-the-ladder-the-dangers-of-eval-and-exec-in-python/"
     },
     {
-      "name": "Package Manager Invocation",
+      "name": "Pip Package Installation",
       "category": "System Configuration",
-      "pattern": "\\b(?:pip|npm|gem|cargo)\\s+install\\b",
+      "pattern": "\\bpip\\s+install\\s+([a-zA-Z0-9\\-_]+)(?:==)?([0-9.]+)?",
       "severity": "Medium",
-      "explanation": "The script is attempting to install external libraries or packages. Ensure you trust the dependencies being pulled in.",
-      "reference": "https://safety.google/security-privacy/"
+      "explanation": "Attempting to install a Python package via pip.",
+      "reference": "https://pypi.org/"
+    },
+    {
+      "name": "Cargo Package Installation",
+      "category": "System Configuration",
+      "pattern": "\\bcargo\\s+install\\s+([a-zA-Z0-9\\-_]+)",
+      "severity": "Medium",
+      "explanation": "Attempting to install a Rust crate via cargo.",
+      "reference": "https://crates.io/"
     }
   ]
 }

@@ -2,6 +2,16 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [0.4.0] 2026-05-01
+- Added vulnerability intelligence engine via `OSV.dev API` integration.
+- Implemented network communication logic within a dedicated intel module.
+- Refined regex patterns in rules.json to capture package names and versions for `pip` and `cargo`.
+- Extended the main analysis loop to trigger automatic vulnerability scanning on detected installation commands.
+- Updated TUI output to render security vulnerabilities alongside static analysis findings.
+- Added `serde` and `reqwest` to Cargo.toml for JSON handling and API requests.
+
+---
+
 ## [0.3.5] - 2026-04-28
 
 ### Added

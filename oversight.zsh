@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 ###############################################################################
-# Oversight Shell Wrapper v0.3.5
+# Oversight Shell Wrapper v0.4.0
 #
 # Author:       Lukas Grumlik - Rakosn1cek
 # Description:  Intercepts risky commands and routes them to the 

@@ -1,3 +1,13 @@
+/*
+ * Oversight - Security Intelligence & Audit Engine
+ * Author:  Lukas Grumlik - Rakosn1cek
+ * Created: 2026-04-19
+ * Version: 0.4.0
+ * Description: 
+ * Dynamic rules loading logic
+ */
+
+
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;

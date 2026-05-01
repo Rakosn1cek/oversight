@@ -2,7 +2,7 @@
  * Oversight - Security Intelligence & Audit Engine
  * Author:  Lukas Grumlik - Rakosn1cek
  * Created: 2026-04-19
- * Version: 0.3.5
+ * Version: 0.4.0
  * Description: 
  * A static analysis tool that audits local scripts and remote Raw URLs.
  * Uses a dynamic rules engine to educate users on malicious patterns.
@@ -15,6 +15,7 @@ use std::path::PathBuf;
 mod rules;
 use rules::{load_rules, Rule};
 use regex::Regex;
+mod intel;
 
 // TUI Imports
 use ratatui::{
@@ -105,26 +106,50 @@ fn perform_analysis(content: &str) -> Vec<AuditFinding> {
         }
 
         for (rule, re) in &compiled_rules {
-            if re.is_match(trimmed) {
+            if let Some(caps) = re.captures(trimmed) {
                 let start = if idx >= 5 { idx - 5 } else { 0 };
                 let end = std::cmp::min(idx + 6, lines.len());
                 
                 let mut context_block = String::new();
                 for i in start..end {
-                    // Add a marker to the actual flagged line
                     let indicator = if i == idx { "> " } else { "  " };
                     context_block.push_str(&format!("{}{}\n", indicator, lines[i]));
                 }
 
                 findings.push(AuditFinding {
                     line_no: idx + 1,
-                    code_snippet: context_block, // Store the block instead of just the line
+                    code_snippet: context_block.clone(),
                     name: rule.name.to_string(),
                     category: rule.category.to_string(),
                     explanation: rule.explanation.to_string(),
                     severity: rule.severity.to_string(),
                     reference: rule.reference.to_string(),
                 });
+
+                // Trigger OSV check for install patterns
+                if rule.name.contains("install") {
+                    let name = caps.get(1).map_or("", |m| m.as_str());
+                    let version = caps.get(2).map_or("", |m| m.as_str());
+                    let ecosystem = if rule.name.contains("pip") { "PyPI" } else { "crates.io" };
+
+                    if !name.is_empty() {
+                        if let Ok(response) = intel::check_package(name, version, ecosystem) {
+                            if let Some(vulns) = response.vulns {
+                                for v in vulns {
+                                    findings.push(AuditFinding {
+                                        line_no: idx + 1,
+                                        code_snippet: context_block.clone(),
+                                        name: format!("Vulnerability: {}", v.id),
+                                        category: "Security".to_string(),
+                                        explanation: v.details,
+                                        severity: "Critical".to_string(),
+                                        reference: format!("https://osv.dev/vulnerability/{}", v.id),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

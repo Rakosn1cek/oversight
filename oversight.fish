@@ -1,5 +1,5 @@
 ###############################################################################
-# Oversight Shell Wrapper v0.3.5 (Fish)
+# Oversight Shell Wrapper v0.4.0 (Fish)
 #
 # Author:       Lukas Grumlik - Rakosn1cek
 # Description:  Intercepts risky commands and routes them to the 
