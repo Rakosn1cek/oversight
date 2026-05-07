@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 ###############################################################################
-# Oversight Shell Wrapper v0.4.1
+# Oversight Shell Wrapper
 #
 # Author:       Lukas Grumlik - Rakosn1cek
 # Description:  Intercepts risky commands and routes them to the 
@@ -23,31 +23,30 @@ oversight() {
 # Automatic interceptor logic
 _oversight_preexec() {
     local user_cmd="$1"
-    # Basic detection to trigger the FZF selection
-    local risky_regex="(curl|wget).+\|( *bash| *sh| *zsh)|rm +-rf +/"
+    # Detection for piping remote content to common interpreters
+    local risky_regex="(curl|wget).+\|( *bash| *sh| *zsh| *python| *ruby| *perl)|rm +-rf +/"
 
     if [[ "$user_cmd" =~ $risky_regex ]]; then
         echo -e "\n\033[1;33m[!] Oversight:\033[0m Risky command pattern detected."
         
         local choice
-        choice=$(echo -e "Audit Command\nRun Normally\nAbort" | fzf \
+        choice=$(echo -e "Analyse Command\nRun Normally\nAbort" | fzf \
             --height=10 \
-            --header="Analyze this command before execution?" \
+            --header="Analyse this command before execution?" \
             --layout=reverse --border=rounded)
 
         case "$choice" in
-            "Audit Command")
+            "Analyse Command")
                 echo -e "\033[1;34m[Oversight]\033[0m Passing to auditor..."
                 
                 # Extract URL for remote auditing
                 if [[ "$user_cmd" =~ "(https?://[^ ]+)" ]]; then
                     local remote_url="${match[1]}"
-                    # Call the function defined above
                     oversight "$remote_url"
                 else
-                    echo "Audit for raw strings coming in v0.4.0"
+                    echo "Audit for raw strings is planned for a future release."
                 fi
-                return 1 # Prevent original command execution
+                return 1
                 ;;
             "Abort"|"")
                 return 1 
@@ -58,3 +57,7 @@ _oversight_preexec() {
         esac
     fi
 }
+
+# Ensure the hook is registered if not already present
+autoload -Uz add-zsh-hook
+add-zsh-hook preexec _oversight_preexec

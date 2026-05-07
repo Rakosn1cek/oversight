@@ -1,118 +1,159 @@
 {
-  "version": "0.4.1",
-  "last_updated": "2026-05-01",
+  "version": "0.4.5",
+  "last_updated": "2026-05-08",
   "rules": [
     {
-      "name": "Root-Level File Destruction",
-      "category": "System Integrity",
-      "pattern": "\\brm\\s+-[rfv]*[rf][rfv]*\\s+/(?:etc|bin|usr|var|home|root|boot)?",
-      "severity": "Critical",
-      "explanation": "Detects attempts to recursively delete critical system mount points. This is almost always catastrophic.",
-      "reference": "https://linux.die.net/man/1/rm"
-    },
-    {
-      "name": "Unverified Remote Execution",
-      "category": "Execution Security",
-      "pattern": "(curl|wget|fetch|axel).*\\|\\s*\\b(bash|sh|zsh|python|perl|php|ruby|node)\\b",
-      "severity": "High",
-      "explanation": "Piping a remote download directly into a shell interpreter skips local inspection.",
-      "reference": "https://www.idontplaydarts.com/2016/04/detecting-curl-pipe-bash-server-side/"
-    },
-    {
-      "name": "Shell Environment Modification",
-      "category": "Persistence",
-      "pattern": "(?:>>|tee\\s+-a).*\\b\\.(?:zshrc|bashrc|profile|bash_profile|zshenv)\\b",
-      "severity": "Medium",
-      "explanation": "The script is modifying your shell configuration. This ensures its changes persist in every new terminal session.",
-      "reference": "https://attack.mitre.org/techniques/T1547/001/"
-    },
-    {
-      "name": "User Shell Change",
-      "category": "System Configuration",
-      "pattern": "\\bchsh\\s+.*-s\\b",
-      "severity": "Medium",
-      "explanation": "Attempts to change the default login shell. This is a significant system-level modification.",
-      "reference": "https://linux.die.net/man/1/chsh"
-    },
-    {
-      "name": "Privilege Escalation Request",
-      "category": "Permission Security",
-      "pattern": "\\bsudo\\s+",
-      "severity": "Medium",
-      "explanation": "The script is invoking commands with root privileges. Ensure you understand why administrative access is required.",
-      "reference": "https://linux.die.net/man/8/sudo"
-    },
-    {
-      "name": "External Repository Cloning",
-      "category": "Network Security",
-      "pattern": "\\bgit\\s+clone\\b",
-      "severity": "Low",
-      "explanation": "Downloads external source code. Oversight cannot audit the contents of the cloned repository automatically.",
-      "reference": "https://git-scm.com/docs/git-clone"
-    },
-    {
-      "name": "Hidden File/Directory Creation",
-      "category": "System Stealth",
-      "pattern": "\\bmkdir\\s+.*\\/\\.[a-zA-Z0-9]+",
-      "severity": "Low",
-      "explanation": "Creates hidden directories. While common for configs, it is also used to hide malicious binaries.",
-      "reference": "https://attack.mitre.org/techniques/T1564/001/"
-    },
-    {
-      "name": "Encoded Payload Execution",
-      "category": "Obfuscation",
-      "pattern": "\\b(base64|openssl|uudecode)\\b.*-d.*\\|\\s*\\b(sh|bash|zsh)\\b",
-      "severity": "High",
-      "explanation": "Decoding an obscured string and executing it immediately to bypass static scanners.",
-      "reference": "https://redcanary.com/blog/clipping-silver-sparrows-wings/"
-    },
-    {
-      "name": "Python Subprocess Execution",
-      "category": "Execution Security",
-      "pattern": "\\b(?:os|subprocess)\\.(?:system|popen|run|call|Popen|spawn)\\b",
-      "severity": "High",
-      "explanation": "The script is using Python to execute external system commands. This can be used to bypass environment restrictions or hide malicious activity.",
-      "reference": "https://docs.python.org/3/library/subprocess.html"
-    },
-    {
-      "name": "Unauthorized Socket Creation",
-      "category": "Network Security",
-      "pattern": "\\bsocket\\.(?:socket|AF_INET|SOCK_STREAM)\\b",
-      "severity": "High",
-      "explanation": "Attempts to create raw network sockets. This is often an indicator of a reverse shell or a manual data exfiltration attempt.",
-      "reference": "https://docs.python.org/3/library/socket.html"
-    },
-    {
-      "name": "Dynamic Code Evaluation",
-      "category": "Execution Security",
-      "pattern": "\\b(?:eval|exec)\\s*\\(",
-      "severity": "Critical",
-      "explanation": "Using eval() or exec() on untrusted input allows for arbitrary code execution. This is a massive security risk in any language.",
-      "reference": "https://pybit.es/articles/climbing-the-ladder-the-dangers-of-eval-and-exec-in-python/"
-    },
-    {
-      "name": "Pip Package Installation",
-      "category": "System Configuration",
-      "pattern": "\\bpip\\s+install\\s+([a-zA-Z0-9\\-_]+)(?:==)?([0-9.]+)?",
-      "severity": "Medium",
-      "explanation": "Attempting to install a Python package via pip.",
-      "reference": "https://pypi.org/"
-    },
-    {
-      "name": "Cargo Package Installation",
-      "category": "System Configuration",
-      "pattern": "\\bcargo\\s+install\\s+([a-zA-Z0-9\\-_]+)",
-      "severity": "Medium",
-      "explanation": "Attempting to install a Rust crate via cargo.",
-      "reference": "https://crates.io/"
-    },
-    {
-    "name": "Potential Command Obfuscation",
+     "name": "Root-Level File Destruction",
+     "category": "System Integrity",
+     "pattern": "\\brm\\s+-[rfv]*[rf][rfv]*\\s+/(?:etc|bin|usr|var|home|root|boot)?",
+     "severity": "Critical",
+     "explanation": "Detects attempts to recursively delete critical system mount points. This is almost always catastrophic.",
+     "reference": "https://linux.die.net/man/1/rm",
+     "fix": "Verify the path target. If removing files, prefer explicit file paths over wildcards to avoid accidental recursive deletion."
+   },
+   {
+     "name": "Unverified Remote Execution",
+     "category": "Execution Security",
+     "pattern": "(curl|wget|fetch|axel).*\\|\\s*\\b(bash|sh|zsh|python|perl|php|ruby|node)\\b",
+     "severity": "High",
+     "explanation": "Piping a remote download directly into a shell interpreter skips local inspection.",
+     "reference": "https://www.idontplaydarts.com/2016/04/detecting-curl-pipe-bash-server-side/",
+     "fix": "Download the script to a file first, audit the contents manually, and execute only if trusted."
+   },
+   {
+     "name": "Shell Environment Modification",
+     "category": "Persistence",
+     "pattern": "(?:>>|tee\\s+-a).*\\b\\.(?:zshrc|bashrc|profile|bash_profile|zshenv)\\b",
+     "severity": "Medium",
+     "explanation": "The script is modifying your shell configuration. This ensures its changes persist in every new terminal session.",
+     "reference": "https://attack.mitre.org/techniques/T1547/001/",
+     "fix": "Inspect the script to see what configuration is being added. Ensure you trust the persistency changes being made to your shell."
+   },
+   {
+     "name": "User Shell Change",
+     "category": "System Configuration",
+     "pattern": "\\bchsh\\s+.*-s\\b",
+     "severity": "Medium",
+     "explanation": "Attempts to change the default login shell. This is a significant system-level modification.",
+     "reference": "https://linux.die.net/man/1/chsh",
+     "fix": "Ensure this change is intentional. Changing your default shell can lock you out if the target shell is not installed or configured correctly."
+   },
+   {
+    "name": "External Repository Cloning",
+    "category": "Network Security",
+    "pattern": "\\bgit\\s+clone\\b",
+    "severity": "Low",
+    "explanation": "Downloads external source code. Oversight cannot audit the contents of the cloned repository automatically.",
+    "reference": "https://git-scm.com/docs/git-clone",
+    "fix": "Clone the repository to a dedicated directory and audit the contents before running any installation or build scripts found inside."
+  },
+  {
+    "name": "Hidden File/Directory Creation",
+    "category": "System Stealth",
+    "pattern": "\\bmkdir\\s+.*\\/\\.[a-zA-Z0-9]+",
+    "severity": "Low",
+    "explanation": "Creates hidden directories. While common for configs, it is also used to hide malicious binaries.",
+    "reference": "https://attack.mitre.org/techniques/T1564/001/",
+    "fix": "Verify the purpose of the hidden directory. It may be used for legitimate configuration storage or to hide malicious artifacts."
+  },
+  {
+    "name": "Encoded Payload Execution",
     "category": "Obfuscation",
-    "pattern": "([a-zA-Z_]+)=['"]?[^'"]+['"]?;.*\$\1",
+    "pattern": "\\b(base64|openssl|uudecode)\\b.*-d.*\\|\\s*\\b(sh|bash|zsh)\\b",
     "severity": "High",
-    "explanation": "The script appears to be constructing commands via variables. This is often used to mask malicious intent from static analysis. Proceed with caution.",
-    "reference": "https://attack.mitre.org/techniques/T1027/"
-    }
+    "explanation": "Decoding an obscured string and executing it immediately to bypass static scanners.",
+    "reference": "https://redcanary.com/blog/clipping-silver-sparrows-wings/",
+    "fix": "Decode the payload manually using base64 -d or similar tools to inspect the underlying command before execution."
+  },
+  {
+    "name": "Python Subprocess Execution",
+    "category": "Execution Security",
+    "pattern": "\\b(?:os|subprocess)\\.(?:system|popen|run|call|Popen|spawn)\\b",
+    "severity": "High",
+    "explanation": "The script is using Python to execute external system commands.",
+    "reference": "https://docs.python.org/3/library/subprocess.html",
+    "fix": "Review the command being executed. Ensure arguments are not derived from untrusted user input to prevent injection."
+  },
+  {
+    "name": "Unauthorized Socket Creation",
+    "category": "Network Security",
+    "pattern": "\\bsocket\\.(?:socket|AF_INET|SOCK_STREAM)\\b",
+    "severity": "High",
+    "explanation": "Attempts to create raw network sockets.",
+    "reference": "https://docs.python.org/3/library/socket.html",
+    "fix": "Check why the script requires network access. If it is not a networking tool, this may indicate unauthorized data exfiltration."
+  },
+  {
+    "name": "Dynamic Code Evaluation",
+    "category": "Execution Security",
+    "pattern": "\\b(?:eval|exec)\\s*\\(",
+    "severity": "Critical",
+    "explanation": "Using eval() or exec() on untrusted input allows for arbitrary code execution.",
+    "reference": "https://pybit.es/articles/climbing-the-ladder-the-dangers-of-eval-and-exec-in-python/",
+    "fix": "Refactor the code to avoid eval/exec. These functions are difficult to secure; use explicit function calls or safer alternatives instead."
+  },
+  {
+   "name": "Pip Package Installation",
+   "category": "System Configuration",
+   "pattern": "\\bpip\\s+install\\s+([a-zA-Z0-9\\-_]+)(?:==)?([0-9.]+)?",
+   "severity": "Medium",
+   "explanation": "Attempting to install a Python package via pip.",
+   "reference": "https://pypi.org/",
+   "fix": "Review the dependencies required by this package. Check the project source on PyPI for security audits or recent suspicious activity."
+ },
+ {
+   "name": "Cargo Package Installation",
+   "category": "System Configuration",
+   "pattern": "\\bcargo\\s+install\\s+([a-zA-Z0-9\\-_]+)",
+   "severity": "Medium",
+   "explanation": "Attempting to install a Rust crate via cargo.",
+   "reference": "https://crates.io/",
+   "fix": "Review the dependencies required by this package. Check the project source on crates.io for security audits or recent suspicious activity."
+ },
+ {
+   "name": "Potential Command Obfuscation",
+   "category": "Obfuscation",
+   "pattern": "[a-zA-Z_]+=['\"]?[^'\"]+['\"]?;.*?\\$[a-zA-Z_]+",
+   "severity": "High",
+   "explanation": "The script appears to be constructing commands via variables.",
+   "reference": "https://attack.mitre.org/techniques/T1027/",
+   "fix": "Manually resolve the variable expansion to reveal the underlying command. Do not execute if the resolved command remains unclear."
+  },
+  {
+    "name": "Go Shell Command Execution",
+    "category": "Execution Security",
+    "pattern": "\\bexec\\.Command\\b",
+    "severity": "High",
+    "explanation": "Spawning system processes in Go can lead to command injection if the arguments are not strictly validated.",
+    "reference": "https://pkg.go.dev/os/exec",
+    "fix": "Ensure all inputs passed to exec.Command are sanitised and avoid passing user-controlled strings directly to the command arguments."
+  },
+  {
+    "name": "Go Unsafe Memory Access",
+    "category": "Memory Security",
+    "pattern": "\\bimport\\s+[\"']unsafe[\"']\\b",
+    "severity": "Medium",
+    "explanation": "The 'unsafe' package allows the program to bypass Go's memory safety protections, potentially leading to memory corruption or arbitrary code execution.",
+    "reference": "https://pkg.go.dev/unsafe",
+    "fix": "Review the usage of unsafe pointers. Avoid importing this package unless absolutely necessary for low-level performance optimisation."
+  },
+  {
+    "name": "Hardcoded Environment Variable Access",
+    "category": "Credential Security",
+    "pattern": "\\b(?:os\\.Getenv|os\\.LookupEnv)\\b",
+    "severity": "Low",
+    "explanation": "The script is accessing environment variables. While common, ensure that sensitive credentials like API keys or tokens are not being logged or exfiltrated.",
+    "reference": "https://gobyexample.com/environment-variables",
+    "fix": "Use a secure secret management service or a .env file that is excluded from version control to handle sensitive environment variables."
+  },
+  {
+    "name": "Sensitive Path Access",
+    "category": "System Stealth",
+    "pattern": "[\"'](?:/etc/shadow|/etc/passwd|/root/\\.ssh/.*)[\"']",
+    "severity": "Critical",
+    "explanation": "The code is explicitly referencing sensitive system files or SSH configuration paths. This is a common indicator of credential harvesting or system reconnaissance.",
+    "reference": "https://attack.mitre.org/techniques/T1005/",
+    "fix": "Ensure the application has a legitimate reason to access these paths. Minimise the permissions of the user running the script to prevent unauthorised file access."
+  }
   ]
 }

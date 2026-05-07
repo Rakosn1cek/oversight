@@ -1,15 +1,13 @@
 /*
  * Oversight - Security Intelligence & Audit Engine
- * Author:  Lukas Grumlik - Rakosn1cek
+ * Author:   Lukas Grumlik - Rakosn1cek
  * Created: 2026-04-19
- * Version: 0.4.1
  * Description: 
  * Vulnerability intelligence engine
  */
 
-
 use serde::{Deserialize, Serialize};
-use reqwest::blocking::Client;
+use reqwest::Client;
 use std::time::Duration;
 
 #[derive(Serialize)]
@@ -35,9 +33,12 @@ pub struct Vulnerability {
     pub details: String,
 }
 
-pub fn check_package(name: &str, version: &str, ecosystem: &str) -> Result<OsvResponse, Box<dyn std::error::Error>> {
+/// Queries the OSV database for known vulnerabilities in a specific package
+pub async fn check_package(name: &str, version: &str, ecosystem: &str) -> Result<OsvResponse, Box<dyn std::error::Error>> {
+    // Initialise the client with a specific User Agent and timeout
     let client = Client::builder()
         .timeout(Duration::from_secs(5))
+        .user_agent("Oversight/0.4.5")
         .build()?;
 
     let query = OsvQuery {
@@ -51,8 +52,10 @@ pub fn check_package(name: &str, version: &str, ecosystem: &str) -> Result<OsvRe
     let response = client
         .post("https://api.osv.dev/v1/query")
         .json(&query)
-        .send()?
-        .json::<OsvResponse>()?;
+        .send()
+        .await?
+        .json::<OsvResponse>()
+        .await?;
 
     Ok(response)
 }

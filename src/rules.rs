@@ -2,7 +2,6 @@
  * Oversight - Security Intelligence & Audit Engine
  * Author:  Lukas Grumlik - Rakosn1cek
  * Created: 2026-04-19
- * Version: 0.4.1
  * Description: 
  * Dynamic rules loading logic
  */
@@ -21,6 +20,7 @@ pub struct Rule {
     pub severity: String,
     pub explanation: String,
     pub reference: String,
+    pub fix: Option<String>,
 }
 
 /// Container for the complete set of rules and metadata

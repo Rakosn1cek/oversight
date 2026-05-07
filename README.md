@@ -1,4 +1,4 @@
-# Oversight (v0.4.1)
+# Oversight (v0.4.5)
 
 [![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/oversight?style=flat&color=gold)](https://github.com/Rakosn1cek/oversight)
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
@@ -11,15 +11,18 @@ Oversight is a terminal-based security intelligence tool designed to audit shell
 Most system compromises happen because of a "leap of faith". Running a script from a GitHub or a forum post. Oversight gives you "X-ray vision" into these scripts, flagging malicious patterns and explaining the risks in plain English so you can make an informed decision.
 
 ## Features
+* **Weighted Risk Scoring**: Implements a 0 to 100 safety index that categorises scripts as Clean, Caution, or Dangerous based on weighted security findings.
+* **Interactive Triage & Mitigation**: Allows users to "suppress" specific findings via the TUI, which visually sanitises the code view by commenting out risky lines and recalculates the risk score in real time.
+* **Actionable Remediation**: Every security flag provides a specific "Fix Suggestion" to help users understand how to safely refactor or handle detected patterns.
 * **Dynamic Rules Engine**: Patterns are externalised in `rules.json`, allowing for real-time security updates across different scripting languages without recompiling the binary.
 * **Context-Aware Auditing**: Provides a multi-line code window (11 lines) around every finding, ensuring variable definitions and function headers are visible during the review.
-* **Multi-Language Support**: Unified security analysis for **Shell (.sh, .zsh)** and **Python (.py)** scripts, targeting cross-language risks like subprocess execution and dynamic evaluation.
-* **Interactive TUI Dashboard**: A professional security console featuring syntax-highlighted findings (Yellow/Bold) linked directly to the code context.
+* **Multi-Language Support**: Unified security analysis for Shell (.sh, .zsh), Python (.py), and Go (.go) source files, with a language-agnostic core capable of detecting system-level threats across most text-based projects.
+* **Interactive TUI Dashboard**: A professional security console featuring syntax-highlighted findings linked directly to the code context for rapid triage.
 * **Remote Fetching Engine**: Audit scripts directly from GitHub, Gist, or any raw URL without saving them to your disk via memory-only analysis.
 * **Educational Auditing**: Every security flag includes a detailed explanation and external references to help users learn to spot and understand malicious patterns.
 * **Refined Pattern Matching**: Intelligent regex engine using word boundaries to minimise false positives while identifying obfuscated threats.
-* **Universal Shell Integration**: Native hooks for **Zsh**, **Bash**, and **Fish** to intercept risky commands in real-time before they execute.
-+ **Vulnerability Intelligence**: Integrated real-time scanning for known CVEs using the OSV.dev API, triggering automatically when supported package installation commands are detected.
+* **Universal Shell Integration**: Native hooks for **Zsh**, **Bash**, and **Fish** to intercept potentially malicious commands in real-time before they execute.
+* **Vulnerability Intelligence**: Integrated real-time scanning for known CVEs using the OSV.dev API, triggering automatically when supported package installation commands are detected.
 
 ## Dependencies
 Oversight is built in Rust for speed and safety. The following are required for compilation and runtime:
@@ -55,6 +58,7 @@ chmod +x install.sh
 - **Audit a local script**: `oversight ./install.sh`
 - **Audit a remote URL**: `oversight https://raw.githubusercontent.com/user/repo/main/setup.sh`
 - **Live Protection**: Simply type a command like `curl ... | bash` and Oversight will automatically intercept it and offer an audit.
+- Press [S] to toggle line suppression and sanitise the code view.
 
 ---
 

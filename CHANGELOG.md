@@ -2,6 +2,19 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [0.4.5] 2026-05-08
+- Implemented a weighted risk scoring system (0 to 100) with dynamic header labels.
+- Added a fix field to the rules engine to provide actionable remediation advice for every finding.
+- Introduced line level suppression via the S key to toggle code sanitisation in the TUI.
+- Refactored the versioning system to pull directly from Cargo metadata using the env macro.
+- Updated the Potential Command Obfuscation rule to use a non-backtracking regex pattern for better stability.
+- Added HashSet tracking for suppressed indices to ensure real-time score updates during triage.
+- Expanded the rules engine to include Go (Golang) and universal system-level threat patterns.
+- Synchronised the Zsh, Bash, and Fish wrappers with enhanced interpreter detection.
+- Fixed the AuditFinding mapping to ensure remediation tips are displayed correctly in the TUI footer.
+
+---
+
 ## [0.4.1] 2026-05-02
 - Added Potential Command Obfuscation category to rules.json
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Oversight Shell Wrapper v0.4.1 (Fish)
+# Oversight Shell Wrapper (Fish)
 #
 # Author:       Lukas Grumlik - Rakosn1cek
 # Description:  Intercepts risky commands and routes them to the 
@@ -14,34 +14,39 @@ function oversight --description 'Security Intelligence & Audit Engine'
         return 1
     end
 
-    eval $binary $argv
+    # Direct execution is preferred over eval in Fish
+    $binary $argv
 end
 
 # Fish event listener for risky commands
 function _oversight_preexec --on-event fish_preexec
     set -l user_cmd $argv[1]
-    set -l risky_regex "(curl|wget).+\|( *bash| *sh| *zsh)|rm +-rf +/"
+    # Detection for piping remote content to common interpreters
+    set -l risky_regex "(curl|wget).+\|( *bash| *sh| *zsh| *python| *ruby| *perl)|rm +-rf +/"
 
     if string match -r $risky_regex $user_cmd > /dev/null
         echo -e "\n\e[1;33m[!] Oversight:\e[0m Risky command pattern detected."
         
-        set -l choice (echo -e "Audit Command\nRun Normally\nAbort" | fzf \
+        set -l choice (echo -e "Analyse Command\nRun Normally\nAbort" | fzf \
             --height=10 \
-            --header="Analyze this command before execution?" \
+            --header="Analyse this command before execution?" \
             --layout=reverse --border=rounded)
 
-        switch $choice
-            case "Audit Command"
+        switch "$choice"
+            case "Analyse Command"
                 echo -e "\e[1;34m[Oversight]\e[0m Passing to auditor..."
-                if string match -r "(https?://[^ ]+)" $user_cmd | read -l remote_url
+                # Extract URL for remote auditing using string match
+                if string match -r "https?://[^ ]+" $user_cmd | read -l remote_url
                     oversight $remote_url
                 else
-                    echo "Audit for raw strings coming in v0.4.0"
+                    echo "Audit for raw strings is planned for a future release."
                 end
-                # Fish does not easily allow cancelling the current command from a hook
-                # without using 'commandline -f repaint', so manual abort is advised.
+                # Clear the command line to prevent execution of the original risky string
+                commandline -r ""
+                commandline -f repaint
             case "Abort" ""
-                # To truly abort in Fish, one would typically clear the commandline
+                # Clear the command line and refresh the prompt
+                commandline -r ""
                 commandline -f repaint
             case "Run Normally"
                 return 0
