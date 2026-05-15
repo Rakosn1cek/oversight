@@ -1,4 +1,4 @@
-# Oversight (v0.4.5)
+# Oversight (v0.5.0)
 
 [![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/oversight?style=flat&color=gold)](https://github.com/Rakosn1cek/oversight)
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
@@ -11,6 +11,11 @@ Oversight is a terminal-based security intelligence tool designed to audit shell
 Most system compromises happen because of a "leap of faith". Running a script from a GitHub or a forum post. Oversight gives you "X-ray vision" into these scripts, flagging malicious patterns and explaining the risks in plain English so you can make an informed decision.
 
 ## Features
+* **Heuristic Entropy Engine**: Implementation of Shannon entropy calculations to identify obfuscated payloads, packed data, and encrypted strings that traditional regex scanners miss.
+* **Malicious Lifecycle Tracking**: Advanced behavioural analysis that links related events across a script, such as the Fetch -> Permissions Change -> Execution chain typical of trojan installers.
+* **Security Heat Map**: A vertical TUI sidebar providing a real-time visual overview of threat distribution throughout the file, allowing for rapid identification of "hot zones" in large scripts.
+* **Behavioural Trace Summaries**: Context-aware reports for heuristic findings that list specific line numbers where suspicious ingress, execution, or persistence patterns were detected.
+* **Anti-Forensic & Persistence Detection**: Monitoring for stealth behaviours including self-deletion (rm $0), history clearing, RAM-only execution (/dev/shm), and reboot hooks (crontab, systemd).
 * **Weighted Risk Scoring**: Implements a 0 to 100 safety index that categorises scripts as Clean, Caution, or Dangerous based on weighted security findings.
 * **Interactive Triage & Mitigation**: Allows users to "suppress" specific findings via the TUI, which visually sanitises the code view by commenting out risky lines and recalculates the risk score in real time.
 * **Actionable Remediation**: Every security flag provides a specific "Fix Suggestion" to help users understand how to safely refactor or handle detected patterns.
@@ -57,8 +62,11 @@ chmod +x install.sh
 **Usage**
 - **Audit a local script**: `oversight ./install.sh`
 - **Audit a remote URL**: `oversight https://raw.githubusercontent.com/user/repo/main/setup.sh`
-- **Live Protection**: Simply type a command like `curl ... | bash` and Oversight will automatically intercept it and offer an audit.
+- **Live Protection**: Commands like `curl ... | bash` are intercepted automatically to offer an audit.
+
+**Keybinds**:
 - Press [S] to toggle line suppression and sanitise the code view.
+- Use arrow keys or [J/K] to navigate findings and the heat map.
 
 ---
 
@@ -69,7 +77,7 @@ chmod +x install.sh
 ## Support & Contributions
 If you would like to support or contribute to the project you are more than welcome.
 
-If you would like to discuss or ask questions about Oversight please join my Discord server [Mend | Oversight | XC Hub](https://discord.gg/GFk45RdS)
+If you would like to discuss or ask questions about Oversight please join my Discord server [Rakosn1cek](https://discord.gg/GFk45RdS)
 
 ## License
 MIT © 2026 Rakosn1cek. Attribution is required for any redistribution or derivative works.

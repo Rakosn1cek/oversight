@@ -2,6 +2,29 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [v0.5.0] 2026-05-15 - The Stealth Update
+- This release moves Oversight from a static pattern matcher to a heuristic behavioural engine. The focus is on detecting "living off the land" attacks and obfuscated payloads that bypass traditional string-based scanners.
+
+### Added
+- Shannon Entropy Engine: New module in heuristics.rs to calculate string randomness. This identifies base64-encoded payloads and packed data blocks with a default threshold of 4.5.
+- Malicious Lifecycle Tracker: Implemented a stateful tracker to identify the "Fetch-Modify-Execute" chain. It links independent commands across a file to detect trojan-style installers.
+ -Security Heat Map: Added a vertical sidebar to the TUI. It provides a compressed visual overview of the entire file, marking high-risk zones with red blocks and global threats with directional arrows.
+- Behavioural Trace Summaries: Global findings now display a detailed "Trace" in the context window, listing exactly which lines contributed to a suspicious lifecycle.
+- Anti-Forensic Detection: Added heuristics for self-deletion commands (rm $0), history tampering (history -c), and silent execution via /dev/null redirection.
+- Persistence Monitoring: Detection for reboot hooks and auto-start mechanisms including crontab, systemctl, and .bashrc modifications.
+
+### Changed
+- TUI Layout: Redesigned the interface into a three-column split (20% Findings, 75% Context, 5% Heat Map) for better information density.
+-  Risk Score Weighting: Re-balanced the scoring engine. Critical behavioural findings now carry a 60-point weight, ensuring a "Dangerous" verdict for confirmed malicious chains.
+- Finding Labels: Updated the list view to use [L#] for line-specific findings and [GLOB] for file-wide heuristic findings.
+
+### Fixed
+- Score Reactivity: Fixed a bug where the risk score header did not always update immediately after suppressing a finding.
+- Path Detection: Improved the execution tracker to correctly identify absolute paths and RAM-only storage in /dev/shm.
+- Regex Performance: Optimised the rule compilation step to prevent UI lag on files with high line counts.
+
+---
+
 ## [0.4.5] 2026-05-08
 - Implemented a weighted risk scoring system (0 to 100) with dynamic header labels.
 - Added a fix field to the rules engine to provide actionable remediation advice for every finding.

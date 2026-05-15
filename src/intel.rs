@@ -38,7 +38,7 @@ pub async fn check_package(name: &str, version: &str, ecosystem: &str) -> Result
     // Initialise the client with a specific User Agent and timeout
     let client = Client::builder()
         .timeout(Duration::from_secs(5))
-        .user_agent("Oversight/0.4.5")
+        .user_agent("Oversight/0.5.0")
         .build()?;
 
     let query = OsvQuery {
