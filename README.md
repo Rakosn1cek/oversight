@@ -1,4 +1,4 @@
-# Oversight (v0.5.0)
+# Oversight (v0.5.5)
 
 [![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/oversight?style=flat&color=gold)](https://github.com/Rakosn1cek/oversight)
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
@@ -33,7 +33,6 @@ Most system compromises happen because of a "leap of faith". Running a script fr
 Oversight is built in Rust for speed and safety. The following are required for compilation and runtime:
 - **Rust Toolchain:** (cargo, rustc) for building the engine.
 - **OpenSSL:** Required by `reqwest` for secure remote fetching.
-- **FZF:** Required by the shell wrappers for interactive selection menus.
 - **Crates:** `ratatui` (TUI), `tokio` (Async runtime), `reqwest` (HTTP), `clap` (CLI parser), `regex`, `serde`, and `serde_json`.
 - **Serde:** Required for JSON ruleset parsing.
 
@@ -65,8 +64,10 @@ chmod +x install.sh
 - **Live Protection**: Commands like `curl ... | bash` are intercepted automatically to offer an audit.
 
 **Keybinds**:
-- Press [S] to toggle line suppression and sanitise the code view.
-- Use arrow keys or [J/K] to navigate findings and the heat map.
+- Use **Up/Down Arrow Keys** to navigate through the left panel findings.
+- When highlighting a global `[GLOB]` behavior finding, navigation controls dynamically switch to vertically scroll the **Highlights** view panel.
+- Press **Left Arrow Key** to jump focus back to the primary findings list view.
+- Press **[S]** to toggle line suppression, comment out flagged lines, and re-balance risk metrics in real time.
 
 ---
 

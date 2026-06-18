@@ -2,6 +2,24 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [v0.5.5] 2026-06-18 - The Interface Stability Update
+
+### Added
+- **Dynamic Four-Column Layout Split:** Implemented a contextual horizontal TUI transformation that splits the viewport into four segments (20% Findings, 50% Context, 25% Highlights, 5% Heat Map) dynamically when a global rule is highlighted.
+- **Stateful Scrolling Highlights Panel:** Added a text-wrapped, vertically scrollable panel mapping out exact code context points for complex behavioral lifecycles.
+- **Contextual Input Routing:** Synchronised keyboard bindings to automatically toggle scroll tracking inside sub-windows based on list focus.
+- **Base64 Macro Tracker Heuristics:** Extended the data matching block to capture static variable structures (e.g., `DATA=`) exceeding 40 characters.
+
+### Changed
+- **Adaptive TUI Contrast Design:** Stripped solid block background highlights from inactive text view tracks, preventing content from becoming invisible on light terminal emulators.
+- **Refined Lifecycle Behavior Weights:** Scaled standard script installation sequences lacking background anti-forensics or execution silence to a Medium risk classification to minimise false-alarm overhead.
+
+### Fixed
+- **Horizontal Text Clipping:** Fixed a layout clipping bug by introducing native line wrapping to structural context panels.
+- **Behavioral Mismatch Errors:** Re-synchronized the view compilation logic to run 1:1 against the core `perform_analysis` engine rules, eradicating layout mismatches like line 685 overrides.
+
+---
+
 ## [v0.5.0] 2026-05-15 - The Stealth Update
 - This release moves Oversight from a static pattern matcher to a heuristic behavioural engine. The focus is on detecting "living off the land" attacks and obfuscated payloads that bypass traditional string-based scanners.
 
