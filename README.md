@@ -9,7 +9,11 @@ Oversight is a terminal-based security intelligence tool designed to audit shell
 
 ## Oversight
 
-<video src="assets/oversight.mp4" width="80%" controls></video>
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/cedf9b0f-6264-4fea-afee-729fcd7b974e" width="600" controls muted autoplay loop>
+    Your browser does not support the video tag.
+  </video>
+</p>
 
 ## Screenshot 1
 
