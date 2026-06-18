@@ -8,7 +8,7 @@
 Oversight is a terminal-based security intelligence tool designed to audit shell scripts and commands before they touch your system. It bridges the gap between "blind trust" and "manual auditing" by providing a high-speed, interactive analysis of both local files and remote scripts via Raw URLs.
 
 ## Oversight
-[](assets/oversight.mp4)
+[Watch the Oversight TUI Interface](assets/oversight.mp4)
 
 ## Screenshot 1
 
