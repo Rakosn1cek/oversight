@@ -15,6 +15,14 @@ Oversight is a terminal-based security intelligence tool designed to audit shell
   </video>
 </p>
 
+**Live AUR Update**
+ 
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/d522ffd8-fdc1-466b-8023-1e359b2e5553" width="600" controls muted autoplay loop>
+    Your browser does not support the video tag.
+  </video>
+</p>
+
 ## Screenshot 1
 
 ![Oversight TUI Interface in Action](assets/oversight1.png)
