@@ -18,38 +18,40 @@ function oversight --description 'Security Intelligence & Audit Engine'
     $binary $argv
 end
 
-# Fish event listener for risky commands
+# Fish event listener for standalone download utility commands
 function _oversight_preexec --on-event fish_preexec
     set -l user_cmd $argv[1]
-    # Detection for piping remote content to common interpreters
-    set -l risky_regex "(curl|wget).+\|( *bash| *sh| *zsh| *python| *ruby| *perl)|rm +-rf +/"
+    set -l risky_regex "((curl|wget).*https?://[^ ]+|rm +-rf +/)"
 
     if string match -r $risky_regex $user_cmd > /dev/null
-        echo -e "\n\e[1;33m[!] Oversight:\e[0m Risky command pattern detected."
-        
-        set -l choice (echo -e "Analyse Command\nRun Normally\nAbort" | fzf \
-            --height=10 \
-            --header="Analyse this command before execution?" \
-            --layout=reverse --border=rounded)
+        while true
+            echo -e "\n\e[1;33m[!] Oversight:\e[0m Risky command pattern detected."
+            set -l choice (echo -e "Analyse Command\nRun Normally\nAbort" | fzf \
+                --height=10 \
+                --header="Analyse this command before execution?" \
+                --layout=reverse --border=rounded)
 
-        switch "$choice"
-            case "Analyse Command"
-                echo -e "\e[1;34m[Oversight]\e[0m Passing to auditor..."
-                # Extract URL for remote auditing using string match
-                if string match -r "https?://[^ ]+" $user_cmd | read -l remote_url
-                    oversight $remote_url
-                else
-                    echo "Audit for raw strings is planned for a future release."
-                end
-                # Clear the command line to prevent execution of the original risky string
-                commandline -r ""
-                commandline -f repaint
-            case "Abort" ""
-                # Clear the command line and refresh the prompt
-                commandline -r ""
-                commandline -f repaint
-            case "Run Normally"
-                return 0
-        end
+            switch "$choice"
+                case "Analyse Command"
+                    echo -e "\e[1;34m[Oversight]\e[0m Passing to auditor..."
+       
+                    if string match -r "https?://[^ ]+" $user_cmd | read -l remote_url
+                        oversight $remote_url
+                        clear
+                    else
+                        echo "Audit for raw strings is planned for a future release."
+                        commandline -f cancel
+                        return 1
+                    end
+                case "Run Normally"
+                    return 0
+                case "Abort" ""
+                    echo -e "\e[1;31m[-] Installation aborted.\e[0m"
+                    commandline -r ""
+                    commandline -f cancel
+                    commandline -f repaint
+                    return 1
+            end
+        done
     end
 end

@@ -1,6 +1,6 @@
 {
-  "version": "0.5.5",
-  "last_updated": "2026-05-08",
+  "version": "0.5.6",
+  "last_updated": "2026-06-22",
   "rules": [
     {
      "name": "Root-Level File Destruction",
@@ -154,6 +154,33 @@
     "explanation": "The code is explicitly referencing sensitive system files or SSH configuration paths. This is a common indicator of credential harvesting or system reconnaissance.",
     "reference": "https://attack.mitre.org/techniques/T1005/",
     "fix": "Ensure the application has a legitimate reason to access these paths. Minimise the permissions of the user running the script to prevent unauthorised file access."
-  }
+  },
+  {
+    "name": "Node Package Installation",
+    "category": "System Configuration",
+    "pattern": "\\b(npm|yarn|pnpm|bun)\\s+(install|add)\\s+([a-zA-Z0-9\\-_]+)",
+    "severity": "Medium",
+    "explanation": "Attempting to install a Node package or dependencies via npm, yarn, pnpm, or bun during the build phase.",
+    "reference": "https://www.npmjs.com/",
+    "fix": "Review the package configuration or package.json files to ensure third-party scripts are not pulling unverified upstream code."
+  },
+  {
+    "name": "Node Native Build Configuration",
+    "category": "Execution Security",
+    "pattern": "\\b(binding\\.gyp|node-gyp|node-pre-gyp)\\b",
+    "severity": "Medium",
+    "explanation": "Detects references to native build configuration structures which can trigger automated binary execution.",
+    "reference": "https://github.com/nodejs/node-gyp",
+    "fix": "Inspect the build directory to ensure native addons are compiled from verified source code."
+  },
+  {
+    "name": "Pre-compiled Binary Injection",
+    "category": "Execution Security",
+    "pattern": "source=.*(\\.(?:bin|elf|exe)|/releases/download/.*\\.zip)",
+    "severity": "High",
+    "explanation": "This specifies a pre-compiled static binary or compressed archive inside its source array instead of clean source code.",
+    "reference": "https://wiki.archlinux.org/title/AUR_submission_guidelines",
+    "fix": "Ensure the upstream source point matches a trusted source repository and does not pull down closed-source blobs blindly."
+  } 
   ]
 }

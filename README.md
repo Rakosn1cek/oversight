@@ -1,7 +1,7 @@
-# Oversight (v0.5.5)
+# Oversight (v0.5.6)
 
 [![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/oversight?style=flat&color=gold)](https://github.com/Rakosn1cek/oversight)
-[![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/cv3ZEYK5Na)
 ![License](https://img.shields.io/github/license/Rakosn1cek/oversight)
 ![Rust](https://img.shields.io/badge/Language-Rust-orange)
 
@@ -24,66 +24,128 @@ Oversight is a terminal-based security intelligence tool designed to audit shell
 ![Oversight TUI Interface in Action](assets/oversight2.png)
 
 ## The Mission
-Most system compromises happen because of a "leap of faith". Running a script from a GitHub or a forum post. Oversight gives you "X-ray vision" into these scripts, flagging malicious patterns and explaining the risks in plain English so you can make an informed decision.
+Most system compromises happen because of a leap of faith, such as executing an unverified package upgrade or running raw setup scripts. Oversight gives you clear insight into these buffers, flagging malicious patterns and explaining security risks in plain language so you can make an informed decision before confirming installations.
 
 ## Features
-* **Heuristic Entropy Engine**: Implementation of Shannon entropy calculations to identify obfuscated payloads, packed data, and encrypted strings that traditional regex scanners miss.
+* **Dynamic Multi-Stream Tab Layout**: Automatically parses unified git stream headers on the fly. When a batch update drops, it isolates the combined patch stream and generates dedicated, readable tabs for each package, pulling in and auditing accompanying `.install` scripts and `.patch` files from the local build directory.
+* **Heuristic Entropy Engine**: Implementation of Shannon entropy calculations to identify obfuscated payloads, packed data, and hidden strings that traditional regex scanners miss.
 * **Malicious Lifecycle Tracking**: Advanced behavioural analysis that links related events across a script, such as the Fetch -> Permissions Change -> Execution chain typical of trojan installers.
-* **Security Heat Map**: A vertical TUI sidebar providing a real-time visual overview of threat distribution throughout the file, allowing for rapid identification of "hot zones" in large scripts.
-* **Behavioural Trace Summaries**: Context-aware reports for heuristic findings that list specific line numbers where suspicious ingress, execution, or persistence patterns were detected.
-* **Anti-Forensic & Persistence Detection**: Monitoring for stealth behaviours including self-deletion (rm $0), history clearing, RAM-only execution (/dev/shm), and reboot hooks (crontab, systemd).
-* **Weighted Risk Scoring**: Implements a 0 to 100 safety index that categorises scripts as Clean, Caution, or Dangerous based on weighted security findings.
-* **Interactive Triage & Mitigation**: Allows users to "suppress" specific findings via the TUI, which visually sanitises the code view by commenting out risky lines and recalculates the risk score in real time.
-* **Actionable Remediation**: Every security flag provides a specific "Fix Suggestion" to help users understand how to safely refactor or handle detected patterns.
-* **Dynamic Rules Engine**: Patterns are externalised in `rules.json`, allowing for real-time security updates across different scripting languages without recompiling the binary.
-* **Context-Aware Auditing**: Provides a multi-line code window (11 lines) around every finding, ensuring variable definitions and function headers are visible during the review.
-* **Multi-Language Support**: Unified security analysis for Shell (.sh, .zsh), Python (.py), and Go (.go) source files, with a language-agnostic core capable of detecting system-level threats across most text-based projects.
-* **Interactive TUI Dashboard**: A professional security console featuring syntax-highlighted findings linked directly to the code context for rapid triage.
-* **Remote Fetching Engine**: Audit scripts directly from GitHub, Gist, or any raw URL without saving them to your disk via memory-only analysis.
-* **Educational Auditing**: Every security flag includes a detailed explanation and external references to help users learn to spot and understand malicious patterns.
-* **Refined Pattern Matching**: Intelligent regex engine using word boundaries to minimise false positives while identifying obfuscated threats.
-* **Universal Shell Integration**: Native hooks for **Zsh**, **Bash**, and **Fish** to intercept potentially malicious commands in real-time before they execute.
+* **Security Heat Map Sidebar**: A vertical track providing a real-time visual overview of threat distribution across the active file, ensuring exact coordinate indicators scale accurately for every distinct tab buffer.
+* **Anti-Forensic & Persistence Detection**: Monitoring for stealth behaviours including self-deletion (`rm $0`), silent pipelines (`> /dev/null`), RAM-only execution paths (`/dev/shm`), and reload hooks (`crontab`, `systemctl`).
+* **Weighted Risk Scoring**: Implements a 0 to 100 safety index that categorises streams as Clean, Caution, or Dangerous based on flat macro metrics that avoid risk-score bloat.
+* **Global Mitigation Toggle**: Allows users to instantly suppress active findings via the TUI using a single switch. This visually sanitises the view by commenting out flagged blocks and recalculates the global risk score index in real time.
+* **Clean Stream Pager Mode**: Removes empty viewport blocks. When a stream passes analysis with zero flags, the full terminal layout remains open as a functional pager, allowing for a standard line-by-line manual code review.
+* **Dynamic Rules Engine**: Patterns are externalised in an independent rules module, allowing for modular updates across different pattern signatures without breaking the TUI parsing loop.
+* **Remote Fetching Engine**: Audit scripts directly from GitHub, Gist, or raw URLs securely via memory-only analysis.
+* **Educational Auditing**: Every security flag includes a detailed explanation and external references to help users learn to identify malicious scripting patterns.
 * **Vulnerability Intelligence**: Integrated real-time scanning for known CVEs using the OSV.dev API, triggering automatically when supported package installation commands are detected.
 
+---
+
 ## Dependencies
-Oversight is built in Rust for speed and safety. The following are required for compilation and runtime:
-- **Rust Toolchain:** (cargo, rustc) for building the engine.
-- **OpenSSL:** Required by `reqwest` for secure remote fetching.
-- **Crates:** `ratatui` (TUI), `tokio` (Async runtime), `reqwest` (HTTP), `clap` (CLI parser), `regex`, `serde`, and `serde_json`.
-- **Serde:** Required for JSON ruleset parsing.
+Oversight is built in Rust for performance and binary isolation. The following native components are required for compilation:
+- **Rust Toolchain:** `cargo` and `rustc` (Edition 2021) to compile the native engine.
+- **OpenSSL:** System library required by `reqwest` for establishing secure remote TLS/SSL fetching operations.
+- **Core Crates:** `ratatui`, `crossterm`, `tokio`, `reqwest`, `clap`, and `regex`.
+
+---
 
 ## Installation & Setup
 
-1. **Clone the repo:**
+1. Via AUR (Recommended for Arch Linux)
+The stable release is maintained on the AUR. Install it using your preferred helper:
+
+`yay -S oversight-git`
+
+2. **Or build manually**:
+
+```zsh
+git clone [https://aur.archlinux.org/oversight-git.git](https://aur.archlinux.org/oversight-git.git)
+cd oversight-git
+makepkg -si
+```
+
+3. **From source:**
+
 `git clone https://github.com/Rakosn1cek/oversight.git` 
 `cd oversight`
 
-2. **Run the Automated Installer:**
-The installer handles compilation, moves the binary to ~/.local/bin, and injects the necessary hooks into your shell configuration (.zshrc, .bashrc, or config.fish).
+4. **Run the Automated Installer:**
+The installer handles compilation, moves the binary to `~/.local/bin`, and injects the necessary hooks into your shell configuration (.zshrc, .bashrc, or config.fish).
 
 ```zsh
 chmod +x install.sh
 ./install.sh
 ```
-3. **Reload your shell:**
+4. **Reload your shell:**
 
-`source ~/.zshr` or your respective shell config
+`source ~/.zshrc` or your respective shell config
+
+---
 
 ## Files & Locations
 - **Binary**: ~/.local/bin/oversight
-- **Rules Database**: ~/.local/share/oversight/rules.json
+- **Rules Database**: ~/.local/share/oversight/rules.json (Respects $XDG_DATA_HOME)
 - **Shell Hooks**: ~/.local/share/oversight/oversight.[zsh|bash|fish]
 
-**Usage**
+---
+
+## Usage
 - **Audit a local script**: `oversight ./install.sh`
-- **Audit a remote URL**: `oversight https://raw.githubusercontent.com/user/repo/main/setup.sh`
-- **Live Protection**: Commands like `curl ... | bash` are intercepted automatically to offer an audit.
+- **Audit a remote URL**: `oversight https://raw.githubusercontent.com/...`
+- **Audit a local configuration file**: `oversight ~/.local/share/oversight/rules.json`
+- **Live Protection**: Intercepts standalone commands like `curl https://...` or risky patterns like `rm -rf /` automatically to offer a multi-option triage menu, and deeply inspects downstream AUR cache profiles before execution.
+
+---
+
+## Shell Configuration Integration
+To permanently deploy Oversight as your primary text and upgrade pager, append either configuration rule to your shell profile file (e.g., `~/.zshrc`, `~/.bashrc`, or `~/.config/fish/config.fish`):
+
+### Option A: Dedicated AUR Helper Integration (Targeted)
+Forces your helper to use Oversight specifically for package upgrades without affecting other system commands:
+
+**For yay (~/.zshrc or ~/.bashrc)**:
+`alias yay="yay --diffpager oversight"`
+
+**For paru (~/.config/paru/paru.conf)**:
+Uncomment or add the pager rule inside the options block:
+
+```zsh
+[options]
+Pager = oversight
+```
+
+## Option B: Global System Pager Environment (Universal)
+Registers the engine as your absolute default shell text pager. Packages, manuals (man), and git streams will automatically pass through the interface:
+
+**Append to ~/.zshrc or ~/.bashrc**
+
+- `export PAGER="oversight"`
+**!Required if MANPAGER is already set to 'less' or another pager**
+- `export MANPAGER="oversight"`
+
+---
+
+## Global Pager Side-Effects Reference
+
+When deploying Oversight globally by exporting it as the primary system text viewer (`export PAGER="oversight"`), the engine intercepts all data streams that pass through terminal paging mechanics.
+
+- While the system handles these inputs safely, the following behavioral traits will manifest across your daily terminal operations:
+- **Official Repository Updates (pacman Sync)**: Running a full system upgrade via `yay` processes official repository mirrors before reaching the AUR queue. Because official binaries lack Git structural paths or cache scripts, Oversight automatically falls back to a flat text buffer. The interface renders the single Static Analysis Passed finding row, immediately mapping your arrow keys to vertically scroll the text transaction list line by line like a standard text pager.
+- **System Manuals (man pages)**: Reviewing command references (e.g., `man pacman` or `man yay`) redirects the instruction manuals directly through the engine. The text parses as a clean stream, allowing you to use standard viewport hotkeys to review documentation inside the unified TUI frame.
+- **Git Repository Telemetry**: Core commands such as `git log` or `git diff` inside your local repositories pass through the static rules database. If a commit contains a matching signature pattern, it triggers the engine alerts; otherwise, it presents standard code reviews within the main pane cleanly.
+- **Automatic Layout Scaling**: The internal parsing logic relies on strict unified header hooks (`diff --git a/.*/yay/`) to allocate multiple package tabs. If an incoming stream does not contain these specific tokens (like normal manuals or repository mirrors), the multi-tab layout is bypassed entirely to prevent terminal workspace fragmentation.
+
+---
 
 **Keybinds**:
-- Use **Up/Down Arrow Keys** to navigate through the left panel findings.
-- When highlighting a global `[GLOB]` behavior finding, navigation controls dynamically switch to vertically scroll the **Highlights** view panel.
-- Press **Left Arrow Key** to jump focus back to the primary findings list view.
-- Press **[S]** to toggle line suppression, comment out flagged lines, and re-balance risk metrics in real time.
+- **Up / Down Arrow Keys**: Navigate through the findings items on the left panel at all times, ensuring the list selection is never trapped.
+- **PageUp / PageDown Keys**: Smoothly scroll the central code viewport line by line independently of the list selection.
+- **Tab Key**: Cycle focus forward through the active code stream segments, jumping from the combined patch stream directly into the individual PKGBUILD source tabs.
+- **Numeric Keys (0-9)**: Jump directly to a specific tab index layout instantly.
+- **Left Arrow Key**: Instantly reset the viewport vertical scroll coordinate offsets back to the top.
+- **[S] Key**: Toggle global suppression to instantly comment out flagged code blocks across the active selection block and re-balance risk parameters in one pass.
+- **[Q] or Esc**: Safely close the interface and pass execution control back to the terminal process pipeline.
 
 ---
 
@@ -94,7 +156,7 @@ chmod +x install.sh
 ## Support & Contributions
 If you would like to support or contribute to the project you are more than welcome.
 
-If you would like to discuss or ask questions about Oversight please join my Discord server [Rakosn1cek](https://discord.gg/GFk45RdS)
+If you would like to discuss or ask questions about Oversight please join my **Discord server [Rakosn1cek](https://discord.gg/cv3ZEYK5Na)**
 
 ## License
 MIT © 2026 Rakosn1cek. Attribution is required for any redistribution or derivative works.

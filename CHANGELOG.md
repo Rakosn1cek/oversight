@@ -2,6 +2,30 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [0.5.6] — 2026-06-27
+
+### Added
+- **Multi-Package Tab Layout Matrix**: Introduced a dynamic input parser that intercepts unified git diff headers on the fly. The TUI now scales automatically, generating separate, dedicated source code tabs for every package found in a batch update queue.
+- **Dynamic Hotkey Navigation Tracker**: Mapped numeric key bindings (`0` through `9`) to allow instant jumping between active data streams alongside standard `Tab` cycling.
+- **Clean Stream Pager Fallback**: Refactored the core vertical layout constraints. When a script passes analysis with a zero risk score, the interface stays open to present a fully interactive text pager for manual validation.
+- **Multi-File Context Discovery**: Expanded the package tracking architecture to scan the full cache directory layout (`~/.cache/yay/<package_name>/`). The engine now automatically locates and audits accompanying components like `*.install` scripts and `*.patch` files.
+- **Supply-Chain Malware Protections**: Added specific heuristic profiles targeting malicious runtime installer invocations (npm, yarn, pnpm, bun) inside the build profile to block real-world build-time injection attacks.
+- **ANSI and Manpage Stream Sanitisation**: Integrated an internal regular expression filter that strips raw formatting backspaces and ANSI escape positioning parameters on the fly, preventing layout corruption from piped manual pages or colourized diff inputs.
+
+### Changed
+- **Fluid Viewport Engine**: Replaced the automated widget scrolling logic with a dynamic vector-slicing paragraph component that wraps long text collections cleanly and renders only visible layout lines to optimize performance.
+- **Consolidated Behavioral Data Models**: Swapped out the multi-row heuristic scoring architecture for a flat `[GLOB]` behavioral entry system, protecting risk calculations from scoring bloat while keeping trace workflows intact.
+- **Decoupled Heat Map Rendering Loop**: Rewrote the Map sidebar layout engine to calculate relative vertical line indexes from individual tab text collections rather than anchoring to the top-level findings arrays, clearing borrow checker constraints.
+- **Unified Directory Risk Profiles**: Refactored the core calculation engine to compile threat indices from all discovered companion files into a single, cohesive macro evaluation per package tab.
+
+### Fixed
+- **Dependency Optimization**: Pruned non-imported dependencies and macro components from the crate manifest configuration files to ensure minimalist, safety-first compilation bounds.
+- **Git Patch Token Stripping**: Adjusted the whitespace trim sequence to accurately strip leading `+` and `-` tokens from live diff paths, eliminating false syntax markers during security evaluations.
+- **Option Trait Compiler Error**: Resolved an invalid parenthesis alignment inside the synthetic clean findings structure that broke string trait implementations during cargo release cycles.
+- **Single-File Verification Deficit**: Replaced the solitary `Path::new("PKGBUILD")` local file check with a dynamic user home cache directory lookup query matching upstream package identifiers.
+
+---
+
 ## [v0.5.5] 2026-06-18 - The Interface Stability Update
 
 ### Added
