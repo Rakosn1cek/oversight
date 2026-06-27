@@ -15,6 +15,8 @@ https://github.com/user-attachments/assets/db958f2a-1927-4b19-a477-d31b959332e3
  
 https://github.com/user-attachments/assets/fe91df7c-8d44-4314-a9c3-aa054bfd9d73
 
+! [Oversight Video](assets/oversight.mp4)
+
 ## Screenshot 1
 
 ![Oversight TUI Interface in Action](assets/oversight1.png)
