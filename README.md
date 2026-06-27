@@ -10,14 +10,13 @@ Oversight is a terminal-based security intelligence tool designed to audit shell
 ## Oversight
 
 <video width="100%" controls playsinline preload="metadata">
-  <source src="https://github.com/Rakosn1cek/oversight/assets/oversight.mp4" type="video/mp4">
+  <source src="https://github.com/user-attachments/assets/db958f2a-1927-4b19-a477-d31b959332e3" type="video/mp4">
   Your browser does not support the video tag.
 </video>
-
 **Live AUR Update**
  
 <video width="100%" controls playsinline preload="metadata">
-  <source src="https://github.com/Rakosn1cek/oversight/assets/Oversight-AUR-Update-Live.mp4" type="video/mp4">
+  <source src="https://github.com/user-attachments/assets/fe91df7c-8d44-4314-a9c3-aa054bfd9d73" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
