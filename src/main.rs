@@ -64,7 +64,7 @@ struct IntentTracker {
 
 struct TargetPackage {
     pub name: String,
-    pub files: Vec<(String, String)>, // e.g., [("PKGBUILD", "text..."), (".install", "text...")]
+    pub files: Vec<(String, String)>, // [("PKGBUILD", "text..."), (".install", "text...")]
 }
 
 // --- APP STATE ---
@@ -297,7 +297,7 @@ async fn perform_analysis(content: &str) -> Vec<AuditFinding> {
             category: "Malware Behaviour".to_string(),
             explanation: "The script runs a secondary package installer during the build profile. This directly allows unverified third-party asset code execution on the local system, mirroring recent AUR hijacking campaigns.".to_string(),
             severity: "Critical".to_string(),
-            reference: "Behavioural Grouping v0.5.6".to_string(),
+            reference: "Behavioural Grouping v0.5.7".to_string(),
             fix: Some("Halt installation immediately. Check upstream dependency tree definitions before executing local build commands.".to_string()),
         });
     }
@@ -333,7 +333,7 @@ async fn perform_analysis(content: &str) -> Vec<AuditFinding> {
             category: "Malware Behaviour".to_string(),
             explanation,
             severity,
-            reference: "Behavioural Grouping v0.5.5".to_string(),
+            reference: "Behavioural Grouping v0.5.7".to_string(),
             fix,
         });
     }
@@ -471,7 +471,7 @@ fn ui(f: &mut ratatui::Frame, app: &mut App, diff_content: &str) {
             current_source_text.lines().map(|l| {
                 let clean = clean_re.replace_all(l, "").into_owned();
                 
-                // Determine the text style based on unified diff formatting standards
+                // Text style based on unified diff formatting standards
                 let style = if clean.starts_with('+') && !clean.starts_with("+++") {
                     Style::default().fg(Color::Green)
                 } else if clean.starts_with('-') && !clean.starts_with("---") {
@@ -500,7 +500,7 @@ fn ui(f: &mut ratatui::Frame, app: &mut App, diff_content: &str) {
             }).collect()
         };
 
-        // Determine viewport text metrics minus layout border frames
+        // Viewport text metrics minus layout border frames
         let viewport_height = (viewport_layout[1].height as usize).saturating_sub(2);
         let scroll_offset = if is_clean_pass || is_custom_pkg_tab || is_glob_selected { 
             app.highlight_scroll as usize 
@@ -665,7 +665,7 @@ async fn main() -> Result<(), io::Error> {
 
     match args.target {
         Some(ref t) if t.starts_with("http") => {
-            let client = reqwest::Client::builder().user_agent("Oversight/0.5.6").build().unwrap();
+            let client = reqwest::Client::builder().user_agent("Oversight/0.5.7").build().unwrap();
             let resp = client.get(t).send().await.expect("Failed to fetch");
             diff_content = resp.text().await.unwrap_or_default();
             source_label = t.clone();
@@ -691,19 +691,25 @@ async fn main() -> Result<(), io::Error> {
 
     // Dynamic Multi-Package Scanner Loops
     // Scan headers inside combined git streams to isolate unique components
-    let diff_header_regex = Regex::new(r"diff --git a/.*/yay/([^/]+)/PKGBUILD").unwrap();
+    let diff_header_regex = Regex::new(r"diff --git a/\.cache/[^/]+/([^/]+)/PKGBUILD|diff --git a/.*/([^/]+)/PKGBUILD").unwrap();
     let mut discovered_names = HashSet::new();
+    
+    // Check if a specific AUR helper environment or custom configuration variable is set
+    let aur_helper = std::env::var("AUDIT_HELPER").unwrap_or_else(|_| "yay".to_string());
     
     for line in diff_content.lines() {
         if let Some(caps) = diff_header_regex.captures(line) {
-            if let Some(pkg_match) = caps.get(1) {
+            // Check both capture groups from the fallback regex definitions
+            if let Some(pkg_match) = caps.get(1).or_else(|| caps.get(2)) {
                 let pkg_name = pkg_match.as_str().to_string();
                 if discovered_names.insert(pkg_name.clone()) {
                     // Reconstruct path allocations matching target local fallback options
                     let home = std::env::var("HOME").unwrap_or_default();
-                    let cache_path = format!("{}/.cache/yay/{}/PKGBUILD", home, pkg_name);
-                    if Path::new(&cache_path).exists() {
-                        if let Ok(content) = fs::read_to_string(&cache_path) {
+                    let cache_path = format!("{}/.cache/{}/{}", home, aur_helper, pkg_name);
+                    let pkgbuild_file = format!("{}/PKGBUILD", cache_path);
+                    
+                    if Path::new(&pkgbuild_file).exists() {
+                        if let Ok(content) = fs::read_to_string(&pkgbuild_file) {
                             packages.push(TargetPackage {
                                 name: pkg_name,
                                 files: vec![("PKGBUILD".to_string(), content)],
@@ -715,7 +721,7 @@ async fn main() -> Result<(), io::Error> {
         }
     }
 
-    // Local single fallback catch segment if running directory scopes manually
+    // Local fallback catch segment if running directory scopes manually
     if packages.is_empty() && Path::new("PKGBUILD").exists() {
         if let Ok(content) = fs::read_to_string("PKGBUILD") {
             let current_dir = std::env::current_dir().unwrap_or_default();
@@ -764,19 +770,19 @@ async fn main() -> Result<(), io::Error> {
                     }
                 }
                 KeyCode::Down => {
-                    // Always navigate down the list rows
+                    // Navigate down the list rows
                     app.next();
                 }
                 KeyCode::Up => {
-                    // Always navigate up the list rows
+                    // Navigate up the list rows
                     app.previous();
                 }
                 KeyCode::PageDown => {
-                    // Dedicated viewport content scroll down
+                    // Viewport content scroll down
                     app.highlight_scroll = app.highlight_scroll.saturating_add(1);
                 }
                 KeyCode::PageUp => {
-                    // Dedicated viewport content scroll up
+                    // Viewport content scroll up
                     app.highlight_scroll = app.highlight_scroll.saturating_sub(1);
                 }
                 KeyCode::Left => {

@@ -1,6 +1,6 @@
 {
-  "version": "0.5.6",
-  "last_updated": "2026-06-22",
+  "version": "0.5.7",
+  "last_updated": "2026-06-28",
   "rules": [
     {
      "name": "Root-Level File Destruction",

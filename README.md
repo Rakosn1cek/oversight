@@ -1,4 +1,4 @@
-# Oversight (v0.5.6)
+# Oversight (v0.5.7)
 
 [![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/oversight?style=flat&color=gold)](https://github.com/Rakosn1cek/oversight)
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/cv3ZEYK5Na)
@@ -108,33 +108,42 @@ Forces your helper to use Oversight specifically for package upgrades without af
 `alias yay="yay --diffpager oversight"`
 
 **For paru (~/.config/paru/paru.conf)**:
-Uncomment or add the pager rule inside the options block:
+Add these lines to your ~/.config/paru/paru.conf. You must include the CombinedUpgrade option, otherwise paru will strip out the ANSI colour codes before passing the text to Oversight, leaving you with black and white text:
 
 ```zsh
 [options]
 Pager = oversight
+CombinedUpgrade
 ```
 
+**For other helpers like Shelly**
+If you are using a different helper, you need to tell Oversight where to find the cache files by using the AUDIT_HELPER variable. For example, you can run it like this:
+
+`AUDIT_HELPER=shelly shelly -Sua | oversight`
+
+Alternatively, you can export the helper variable globally in your shell profile so Oversight always knows which cache path to check:
+
+`export AUDIT_HELPER="shelly"`
+
 ## Option B: Global System Pager Environment (Universal)
-Registers the engine as your absolute default shell text pager. Packages, manuals (man), and git streams will automatically pass through the interface:
+This setup registers Oversight as your default system text pager. This means packages, man pages, and git streams will automatically open inside the interface.
 
-**Append to ~/.zshrc or ~/.bashrc**
-
-- `export PAGER="oversight"`
-**!Required if MANPAGER is already set to 'less' or another pager**
-- `export MANPAGER="oversight"`
+Add these lines to your ~/.zshrc or ~/.bashrc:
+```zsh
+export PAGER="oversight"
+export MANPAGER="oversight"
+```
+The second line is necessary if your system configuration already sets `MANPAGER` to `less` or another tool.
 
 ---
 
 ## Global Pager Side-Effects Reference
-
-When deploying Oversight globally by exporting it as the primary system text viewer (`export PAGER="oversight"`), the engine intercepts all data streams that pass through terminal paging mechanics.
-
-- While the system handles these inputs safely, the following behavioral traits will manifest across your daily terminal operations:
-- **Official Repository Updates (pacman Sync)**: Running a full system upgrade via `yay` processes official repository mirrors before reaching the AUR queue. Because official binaries lack Git structural paths or cache scripts, Oversight automatically falls back to a flat text buffer. The interface renders the single Static Analysis Passed finding row, immediately mapping your arrow keys to vertically scroll the text transaction list line by line like a standard text pager.
-- **System Manuals (man pages)**: Reviewing command references (e.g., `man pacman` or `man yay`) redirects the instruction manuals directly through the engine. The text parses as a clean stream, allowing you to use standard viewport hotkeys to review documentation inside the unified TUI frame.
-- **Git Repository Telemetry**: Core commands such as `git log` or `git diff` inside your local repositories pass through the static rules database. If a commit contains a matching signature pattern, it triggers the engine alerts; otherwise, it presents standard code reviews within the main pane cleanly.
-- **Automatic Layout Scaling**: The internal parsing logic relies on strict unified header hooks (`diff --git a/.*/yay/`) to allocate multiple package tabs. If an incoming stream does not contain these specific tokens (like normal manuals or repository mirrors), the multi-tab layout is bypassed entirely to prevent terminal workspace fragmentation.
+- When deploying Oversight globally by exporting it as the primary system text viewer, the engine intercepts all data streams that pass through terminal paging mechanics.
+- While the system handles these inputs safely, you will notice specific behaviours across your daily terminal operations.
+- Running a full system upgrade processes official repository mirrors before reaching the AUR queue. Because official binaries lack Git structural paths or cache scripts, Oversight automatically falls back to a flat text buffer. The interface renders a single Static Analysis Passed finding row and maps your arrow keys to vertically scroll the text transaction list line by line like a standard text pager.
+- Reviewing command references like man pacman redirects the instruction manuals directly through the engine. The text parses as a clean stream, allowing you to use standard viewport hotkeys to review documentation inside the unified TUI frame.
+- Core commands such as `git log` or `git diff` inside your local repositories pass through the static rules database. If a commit contains a matching signature pattern, it triggers the engine alerts, otherwise, it presents standard code reviews within the main pane cleanly.
+- The internal parsing logic relies on strict unified header hooks to allocate multiple package tabs. If an incoming stream does not contain these specific cache tokens, such as normal manual pages or repository mirrors, the multi-tab layout is bypassed entirely to prevent terminal workspace fragmentation.
 
 ---
 
@@ -156,7 +165,9 @@ When deploying Oversight globally by exporting it as the primary system text vie
 ## Support & Contributions
 If you would like to support or contribute to the project you are more than welcome.
 
-If you would like to discuss or ask questions about Oversight please join my **Discord server [Rakosn1cek](https://discord.gg/cv3ZEYK5Na)**
+If you would like to discuss or ask questions about Oversight please join my **Discord server [Rakosn1cek](https://discord.gg/cv3ZEYK5Na)** <- This is optional, not requirement.
+
+You can also open an Issue or leave a message in the Discussions.
 
 ## License
 MIT © 2026 Rakosn1cek. Attribution is required for any redistribution or derivative works.

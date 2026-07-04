@@ -2,6 +2,17 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [0.5.7] - 2026-07-04
+
+### Added
+- Added support for custom AUR helpers via the `AUDIT_HELPER` environment variable.
+
+### Changed
+- Updated the git diff parser regex to be helper-agnostic, allowing the tool to parse incoming package names from various cache directory structures (such as yay, paru, or Shelly).
+- Removed hardcoded path logic to ensure fallback compatibility across different distribution setups.
+
+---
+
 ## [0.5.6] — 2026-06-27
 
 ### Added

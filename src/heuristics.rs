@@ -36,6 +36,6 @@ pub fn is_high_entropy(line: &str) -> bool {
         return false; 
     }
     
-    // Using 4.5 as the default threshold for Base64 detection
+    // Using 5.2 as the default threshold for Base64 detection
     calculate_entropy(trimmed) > 5.2
 }
