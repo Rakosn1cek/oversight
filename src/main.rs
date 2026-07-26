@@ -297,7 +297,7 @@ async fn perform_analysis(content: &str) -> Vec<AuditFinding> {
             category: "Malware Behaviour".to_string(),
             explanation: "The script runs a secondary package installer during the build profile. This directly allows unverified third-party asset code execution on the local system, mirroring recent AUR hijacking campaigns.".to_string(),
             severity: "Critical".to_string(),
-            reference: "Behavioural Grouping v0.5.7".to_string(),
+            reference: "Behavioural Grouping v0.5.8".to_string(),
             fix: Some("Halt installation immediately. Check upstream dependency tree definitions before executing local build commands.".to_string()),
         });
     }
@@ -333,7 +333,7 @@ async fn perform_analysis(content: &str) -> Vec<AuditFinding> {
             category: "Malware Behaviour".to_string(),
             explanation,
             severity,
-            reference: "Behavioural Grouping v0.5.7".to_string(),
+            reference: "Behavioural Grouping v0.5.8".to_string(),
             fix,
         });
     }
@@ -697,12 +697,31 @@ async fn main() -> Result<(), io::Error> {
     // Check if a specific AUR helper environment or custom configuration variable is set
     let aur_helper = std::env::var("AUDIT_HELPER").unwrap_or_else(|_| "yay".to_string());
     
+    let mut findings = perform_analysis(&diff_content).await;
+
     for line in diff_content.lines() {
         if let Some(caps) = diff_header_regex.captures(line) {
             // Check both capture groups from the fallback regex definitions
             if let Some(pkg_match) = caps.get(1).or_else(|| caps.get(2)) {
                 let pkg_name = pkg_match.as_str().to_string();
                 if discovered_names.insert(pkg_name.clone()) {
+                    
+                    // Check if the AUR package is orphaned
+                    if let Ok(is_orphaned) = intel::check_aur_status(&pkg_name).await {
+                        if is_orphaned {
+                            findings.push(AuditFinding {
+                                line_no: 0,
+                                code_snippet: format!("Package Name: {}\nStatus: Orphaned on AUR (No active maintainer)", pkg_name),
+                                name: "Orphaned AUR Package".to_string(),
+                                category: "Maintenance Risk".to_string(),
+                                explanation: "This package has no active maintainer on the Arch User Repository. Unmaintained packages can become vectors for abandonment or malicious takeovers.".to_string(),
+                                severity: "Critical".to_string(),
+                                reference: format!("https://aur.archlinux.org/packages/{}", pkg_name),
+                                fix: Some("Consider adopting this package or switching to an alternative maintained package from the extra repository or AUR.".to_string()),
+                            });
+                        }
+                    }
+
                     // Reconstruct path allocations matching target local fallback options
                     let home = std::env::var("HOME").unwrap_or_default();
                     let cache_path = format!("{}/.cache/{}/{}", home, aur_helper, pkg_name);

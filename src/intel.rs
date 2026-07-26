@@ -33,12 +33,25 @@ pub struct Vulnerability {
     pub details: String,
 }
 
+// --- AUR Metadata Structures ---
+
+#[derive(Deserialize, Debug)]
+pub struct AurRpcResponse {
+    pub results: Vec<AurPackageInfo>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AurPackageInfo {
+    #[serde(rename = "Maintainer")]
+    pub maintainer: Option<String>,
+}
+
 /// Queries the OSV database for known vulnerabilities in a specific package
 pub async fn check_package(name: &str, version: &str, ecosystem: &str) -> Result<OsvResponse, Box<dyn std::error::Error>> {
     // Initialise the client with a specific User Agent and timeout
     let client = Client::builder()
         .timeout(Duration::from_secs(5))
-        .user_agent("Oversight/0.5.7")
+        .user_agent("Oversight/0.5.8")
         .build()?;
 
     let query = OsvQuery {
@@ -58,4 +71,32 @@ pub async fn check_package(name: &str, version: &str, ecosystem: &str) -> Result
         .await?;
 
     Ok(response)
+}
+
+/// Queries the Arch User Repository to check if a package is orphaned or unmaintained
+pub async fn check_aur_status(pkgname: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    let client = Client::builder()
+        .timeout(Duration::from_secs(5))
+        .user_agent("Oversight/0.5.8")
+        .build()?;
+
+    let url = format!("https://aur.archlinux.org/rpc/v5/info?arg[]={}", pkgname);
+    
+    let response = client
+        .get(&url)
+        .send()
+        .await?
+        .json::<AurRpcResponse>()
+        .await?;
+
+    if let Some(pkg_info) = response.results.first() {
+        // If the maintainer field is None or empty, the package is orphaned on the AUR
+        match &pkg_info.maintainer {
+            Some(m) if !m.trim().is_empty() => Ok(false),
+            _ => Ok(true),
+        }
+    } else {
+        // Package not found on AUR (might be local or official repo)
+        Ok(false)
+    }
 }
