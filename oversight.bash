@@ -11,7 +11,7 @@ oversight() {
     # Path to the permanent installation directory
     local binary="$HOME/.local/bin/oversight"
     
-    if [[ -z "$1" ]]; then
+    if [[ -t 0 && -z "$1" ]]; then
         echo "Usage: oversight <script_path_or_url>"
         return 1
     fi

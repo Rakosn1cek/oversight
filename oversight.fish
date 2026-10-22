@@ -9,7 +9,7 @@
 function oversight --description 'Security Intelligence & Audit Engine'
     set -l binary "$HOME/.local/bin/oversight"
     
-    if test -z "$argv[1]"
+    if isatty stdin; and test -z "$argv[1]"
         echo "Usage: oversight <script_path_or_url>"
         return 1
     end

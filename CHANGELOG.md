@@ -2,6 +2,25 @@
 
 All notable changes to the Oversight project will be documented in this file.
 
+## [0.5.9] - 2026-10-22
+
+### Fixed
+- **Pager Scrolling and Navigation**: Restored line-by-line viewport scrolling using Up/Down arrow keys and j/k keys in pager mode. Added page stepping via PageDown/PageUp, Space/b, and half-page navigation via d/u.
+- **Viewport Line Wrap Truncation**: Resolved text truncation where wrapped lines cut off the lower section of the page by rendering full text lines through paragraph scrolling.
+- **Mouse Wheel Support**: Added mouse scroll wheel listeners to scroll through text streams smoothly.
+- **Minimap Scroll Position**: Added visual scroll position thumb indicator on the minimap sidebar.
+- **Shell Wrapper Pipe Stream**: Updated shell functions in Zsh, Bash, and Fish to permit piped input without requiring explicit arguments when standard input is not a terminal.
+- **Variable Shadowing**: Removed redundant analysis call that previously shadowed findings and discarded orphaned package warnings.
+
+---
+
+## [0.5.8] - 2026-07-26
+
+### Added
+- **AUR Orphaned Package Detection**: Added check to alert when an audited AUR package has no active maintainer.
+
+---
+
 ## [0.5.7] - 2026-07-04
 
 ### Added

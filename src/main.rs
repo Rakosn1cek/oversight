@@ -29,7 +29,7 @@ use ratatui::{
     Terminal,
 };
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers, MouseEventKind},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -72,6 +72,8 @@ struct App {
     findings: Vec<AuditFinding>,
     state: ListState,
     highlight_scroll: u16,
+    max_scroll: u16,
+    viewport_height: u16,
     source_name: String,
     risk_score: usize,
     suppressed_indices: HashSet<usize>,
@@ -93,6 +95,8 @@ impl App {
             findings, 
             state,
             highlight_scroll: 0,
+            max_scroll: 0,
+            viewport_height: 10,
             source_name, 
             risk_score,
             suppressed_indices,
@@ -129,6 +133,36 @@ impl App {
         };
         self.state.select(Some(i));
         self.highlight_scroll = 0;
+    }
+
+    fn scroll_down(&mut self, amount: u16) {
+        self.highlight_scroll = self.highlight_scroll.saturating_add(amount).min(self.max_scroll);
+    }
+
+    fn scroll_up(&mut self, amount: u16) {
+        self.highlight_scroll = self.highlight_scroll.saturating_sub(amount);
+    }
+
+    fn scroll_to_top(&mut self) {
+        self.highlight_scroll = 0;
+    }
+
+    fn scroll_to_bottom(&mut self) {
+        self.highlight_scroll = self.max_scroll;
+    }
+
+    fn page_step(&self) -> u16 {
+        self.viewport_height.saturating_sub(2).max(1)
+    }
+
+    fn half_page_step(&self) -> u16 {
+        (self.viewport_height / 2).max(1)
+    }
+
+    fn is_pager_mode(&self) -> bool {
+        self.findings.len() <= 1 
+            || self.active_tab > 0 
+            || self.state.selected().map(|sel| self.findings[sel].name == "Static Analysis Passed").unwrap_or(false)
     }
 }
 
@@ -297,7 +331,7 @@ async fn perform_analysis(content: &str) -> Vec<AuditFinding> {
             category: "Malware Behaviour".to_string(),
             explanation: "The script runs a secondary package installer during the build profile. This directly allows unverified third-party asset code execution on the local system, mirroring recent AUR hijacking campaigns.".to_string(),
             severity: "Critical".to_string(),
-            reference: "Behavioural Grouping v0.5.8".to_string(),
+            reference: "Behavioural Grouping v0.5.9".to_string(),
             fix: Some("Halt installation immediately. Check upstream dependency tree definitions before executing local build commands.".to_string()),
         });
     }
@@ -333,7 +367,7 @@ async fn perform_analysis(content: &str) -> Vec<AuditFinding> {
             category: "Malware Behaviour".to_string(),
             explanation,
             severity,
-            reference: "Behavioural Grouping v0.5.8".to_string(),
+            reference: "Behavioural Grouping v0.5.9".to_string(),
             fix,
         });
     }
@@ -466,10 +500,13 @@ fn ui(f: &mut ratatui::Frame, app: &mut App, diff_content: &str) {
             diff_content
         };
 
+        static CLEAN_RE: std::sync::LazyLock<Regex> = std::sync::LazyLock::new(|| {
+            Regex::new(r"\x1B\[[0-9;]*[a-zA-Z]|.\x08").unwrap()
+        });
+
         let lines: Vec<Line> = if is_clean_pass || is_custom_pkg_tab || is_glob_selected {
-            let clean_re = regex::Regex::new(r"\x1B\[[0-9;]*[a-zA-Z]|.\x08").unwrap();
             current_source_text.lines().map(|l| {
-                let clean = clean_re.replace_all(l, "").into_owned();
+                let clean = CLEAN_RE.replace_all(l, "").into_owned();
                 
                 // Text style based on unified diff formatting standards
                 let style = if clean.starts_with('+') && !clean.starts_with("+++") {
@@ -502,22 +539,22 @@ fn ui(f: &mut ratatui::Frame, app: &mut App, diff_content: &str) {
 
         // Viewport text metrics minus layout border frames
         let viewport_height = (viewport_layout[1].height as usize).saturating_sub(2);
-        let scroll_offset = if is_clean_pass || is_custom_pkg_tab || is_glob_selected { 
-            app.highlight_scroll as usize 
-        } else { 
-            0 
-        };
+        let inner_width = (viewport_layout[1].width as usize).saturating_sub(2);
+        app.viewport_height = viewport_height as u16;
 
-        // Process active stream slices dynamically instead of tracking layout offsets inside widgets
-        let visible_lines: Vec<Line> = lines
-            .into_iter()
-            .skip(scroll_offset)
-            .take(viewport_height)
-            .collect();
+        let mut total_visual_rows = 0;
+        for line in &lines {
+            let width = line.width();
+            let rows = if inner_width == 0 || width == 0 { 1 } else { (width + inner_width - 1) / inner_width };
+            total_visual_rows += rows;
+        }
+        app.max_scroll = (total_visual_rows as u16).saturating_sub(app.viewport_height);
+        app.highlight_scroll = app.highlight_scroll.min(app.max_scroll);
 
-        let code_para = Paragraph::new(visible_lines)
+        let code_para = Paragraph::new(lines)
             .block(Block::default().borders(Borders::ALL).title(" Viewport "))
-            .wrap(Wrap { trim: true });
+            .wrap(Wrap { trim: true })
+            .scroll((app.highlight_scroll, 0));
             
         f.render_widget(ratatui::widgets::Clear, viewport_layout[1]);
         f.render_widget(code_para, viewport_layout[1]);
@@ -635,6 +672,15 @@ fn ui(f: &mut ratatui::Frame, app: &mut App, diff_content: &str) {
             }
         }
 
+        // Render scroll position indicator on minimap
+        if sidebar_height > 2 && app.max_scroll > 0 {
+            let usable_range = sidebar_height - 2;
+            let thumb = 1 + ((app.highlight_scroll as usize * (usable_range.saturating_sub(1))) / app.max_scroll as usize);
+            if map_lines[thumb].spans.is_empty() || map_lines[thumb].spans[0].content == " " {
+                map_lines[thumb] = Line::from(Span::styled("█", Style::default().fg(Color::Cyan)));
+            }
+        }
+
         map_lines[0] = Line::from(Span::styled("▼", Style::default().fg(highest_severity_color)));
         if sidebar_height > 1 {
             map_lines[sidebar_height - 1] = Line::from(Span::styled("▲", Style::default().fg(highest_severity_color)));
@@ -665,7 +711,7 @@ async fn main() -> Result<(), io::Error> {
 
     match args.target {
         Some(ref t) if t.starts_with("http") => {
-            let client = reqwest::Client::builder().user_agent("Oversight/0.5.7").build().unwrap();
+            let client = reqwest::Client::builder().user_agent(format!("Oversight/{}", VERSION)).build().unwrap();
             let resp = client.get(t).send().await.expect("Failed to fetch");
             diff_content = resp.text().await.unwrap_or_default();
             source_label = t.clone();
@@ -755,8 +801,6 @@ async fn main() -> Result<(), io::Error> {
         }
     }
 
-    let findings = perform_analysis(&diff_content).await;
-
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -767,57 +811,99 @@ async fn main() -> Result<(), io::Error> {
 
     loop {
         terminal.draw(|f| ui(f, &mut app, &diff_content))?;
-        if let Event::Key(key) = event::read()? {
+        match event::read()? {
+            Event::Key(key) => {
+                let max_tab_index = app.packages.len();
+                let is_pager = app.is_pager_mode();
 
-            let max_tab_index = app.packages.len();
-
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => break,
-                KeyCode::Tab => {
-                    if max_tab_index > 0 {
-                        app.active_tab = if app.active_tab >= max_tab_index { 0 } else { app.active_tab + 1 };
-                        app.highlight_scroll = 0;
-                    }
-                }
-                KeyCode::Char(c) if c.is_digit(10) => {
-                    if let Some(digit) = c.to_digit(10) {
-                        let target_idx = digit as usize;
-                        if target_idx <= max_tab_index {
-                            app.active_tab = target_idx;
+                match key.code {
+                    KeyCode::Char('q') | KeyCode::Esc => break,
+                    KeyCode::Tab => {
+                        if max_tab_index > 0 {
+                            app.active_tab = if app.active_tab >= max_tab_index { 0 } else { app.active_tab + 1 };
                             app.highlight_scroll = 0;
                         }
                     }
-                }
-                KeyCode::Down => {
-                    // Navigate down the list rows
-                    app.next();
-                }
-                KeyCode::Up => {
-                    // Navigate up the list rows
-                    app.previous();
-                }
-                KeyCode::PageDown => {
-                    // Viewport content scroll down
-                    app.highlight_scroll = app.highlight_scroll.saturating_add(1);
-                }
-                KeyCode::PageUp => {
-                    // Viewport content scroll up
-                    app.highlight_scroll = app.highlight_scroll.saturating_sub(1);
-                }
-                KeyCode::Left => {
-                    // Reset the viewport scroll tracking
-                    app.highlight_scroll = 0;
-                }
-                KeyCode::Char('s') | KeyCode::Char('S') => {
-                    if let Some(sel) = app.state.selected() {
-                        if !app.suppressed_indices.insert(sel) {
-                            app.suppressed_indices.remove(&sel);
+                    KeyCode::Char(c) if c.is_digit(10) => {
+                        if let Some(digit) = c.to_digit(10) {
+                            let target_idx = digit as usize;
+                            if target_idx <= max_tab_index {
+                                app.active_tab = target_idx;
+                                app.highlight_scroll = 0;
+                            }
                         }
-                        app.risk_score = calculate_risk_score(&app.findings, &app.suppressed_indices);
                     }
+                    KeyCode::Down => {
+                        if is_pager {
+                            app.scroll_down(1);
+                        } else {
+                            app.next();
+                        }
+                    }
+                    KeyCode::Up => {
+                        if is_pager {
+                            app.scroll_up(1);
+                        } else {
+                            app.previous();
+                        }
+                    }
+                    KeyCode::Char('j') | KeyCode::Char('J') => {
+                        app.scroll_down(1);
+                    }
+                    KeyCode::Char('k') | KeyCode::Char('K') => {
+                        app.scroll_up(1);
+                    }
+                    KeyCode::PageDown | KeyCode::Char(' ') => {
+                        app.scroll_down(app.page_step());
+                    }
+                    KeyCode::PageUp | KeyCode::Char('b') => {
+                        app.scroll_up(app.page_step());
+                    }
+                    KeyCode::Char('d') => {
+                        if key.modifiers.contains(KeyModifiers::CONTROL) || is_pager {
+                            app.scroll_down(app.half_page_step());
+                        }
+                    }
+                    KeyCode::Char('u') => {
+                        if key.modifiers.contains(KeyModifiers::CONTROL) || is_pager {
+                            app.scroll_up(app.half_page_step());
+                        }
+                    }
+                    KeyCode::Char('f') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.scroll_down(app.page_step());
+                    }
+                    KeyCode::Home | KeyCode::Char('g') => {
+                        app.scroll_to_top();
+                    }
+                    KeyCode::End | KeyCode::Char('G') => {
+                        app.scroll_to_bottom();
+                    }
+                    KeyCode::Left => {
+                        app.scroll_to_top();
+                    }
+                    KeyCode::Char('s') | KeyCode::Char('S') => {
+                        if let Some(sel) = app.state.selected() {
+                            if !app.suppressed_indices.insert(sel) {
+                                app.suppressed_indices.remove(&sel);
+                            }
+                            app.risk_score = calculate_risk_score(&app.findings, &app.suppressed_indices);
+                        }
+                    }
+                    _ => {}
                 }
-                _ => {}
             }
+            Event::Mouse(mouse) => {
+                match mouse.kind {
+                    MouseEventKind::ScrollDown => {
+                        app.scroll_down(3);
+                    }
+                    MouseEventKind::ScrollUp => {
+                        app.scroll_up(3);
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
         }
     }
 
@@ -827,3 +913,64 @@ async fn main() -> Result<(), io::Error> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_man_pacman() {
+        let output = std::process::Command::new("man").arg("pacman").output().unwrap();
+        let text = String::from_utf8_lossy(&output.stdout);
+        let findings = perform_analysis(&text).await;
+        println!("Findings count: {}", findings.len());
+        for f in &findings {
+            println!("Finding: [{}] {}", f.line_no, f.name);
+        }
+    }
+
+    #[test]
+    fn test_app_scrolling_and_clamping() {
+        let findings = vec![AuditFinding {
+            line_no: 0,
+            code_snippet: "test".to_string(),
+            name: "Static Analysis Passed".to_string(),
+            category: "Audit".to_string(),
+            explanation: "Clean".to_string(),
+            severity: "Low".to_string(),
+            reference: "Engine".to_string(),
+            fix: None,
+        }];
+
+        let mut app = App::new(findings, "test".to_string(), Vec::new());
+        assert!(app.is_pager_mode());
+
+        app.max_scroll = 50;
+        app.viewport_height = 20;
+
+        // Line down
+        app.scroll_down(1);
+        assert_eq!(app.highlight_scroll, 1);
+
+        // Page down
+        let step = app.page_step();
+        assert_eq!(step, 18);
+        app.scroll_down(step);
+        assert_eq!(app.highlight_scroll, 19);
+
+        // Scroll past max
+        app.scroll_down(100);
+        assert_eq!(app.highlight_scroll, 50);
+
+        // Scroll up
+        app.scroll_up(10);
+        assert_eq!(app.highlight_scroll, 40);
+
+        // Scroll to bottom and top
+        app.scroll_to_bottom();
+        assert_eq!(app.highlight_scroll, 50);
+        app.scroll_to_top();
+        assert_eq!(app.highlight_scroll, 0);
+    }
+}
+

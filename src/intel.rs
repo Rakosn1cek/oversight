@@ -51,7 +51,7 @@ pub async fn check_package(name: &str, version: &str, ecosystem: &str) -> Result
     // Initialise the client with a specific User Agent and timeout
     let client = Client::builder()
         .timeout(Duration::from_secs(5))
-        .user_agent("Oversight/0.5.8")
+        .user_agent("Oversight/0.5.9")
         .build()?;
 
     let query = OsvQuery {
@@ -77,7 +77,7 @@ pub async fn check_package(name: &str, version: &str, ecosystem: &str) -> Result
 pub async fn check_aur_status(pkgname: &str) -> Result<bool, Box<dyn std::error::Error>> {
     let client = Client::builder()
         .timeout(Duration::from_secs(5))
-        .user_agent("Oversight/0.5.8")
+        .user_agent("Oversight/0.5.9")
         .build()?;
 
     let url = format!("https://aur.archlinux.org/rpc/v5/info?arg[]={}", pkgname);
