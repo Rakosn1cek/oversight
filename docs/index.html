@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oversight | Security Intelligence & Audit Engine Documentation</title>
+  <meta name="description" content="Official documentation for Oversight: a terminal security auditor and intelligent pager for scripts, AUR updates, and shell pipelines.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="brand">
+      <span>🛡️ Oversight</span>
+      <span class="badge">v0.5.9</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#quickstart">Quickstart</a>
+      <a href="#features">Features</a>
+      <a href="#pager-guide">Pager Setup</a>
+      <a href="#keybinds">Keybinds</a>
+      <a href="https://github.com/Rakosn1cek/oversight" class="btn-github" target="_blank" rel="noopener">
+        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </nav>
+  </header>
+
+  <div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-title">Getting Started</div>
+        <ul class="sidebar-menu">
+          <li><a href="#overview">Overview & Mission</a></li>
+          <li><a href="#quickstart">Quick Start</a></li>
+          <li><a href="#installation">Installation Guide</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Core Engine</div>
+        <ul class="sidebar-menu">
+          <li><a href="#features">Feature Breakdown</a></li>
+          <li><a href="#behavioural">Behavioural Models</a></li>
+          <li><a href="#rules-engine">Rules & Signatures</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Integration</div>
+        <ul class="sidebar-menu">
+          <li><a href="#shell-hooks">Shell Interception</a></li>
+          <li><a href="#pager-guide">AUR Helper & Pager</a></li>
+          <li><a href="#pager-effects">Pager Stream Semantics</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Reference</div>
+        <ul class="sidebar-menu">
+          <li><a href="#keybinds">Keyboard & Controls</a></li>
+          <li><a href="#advisory">Security Advisory</a></li>
+          <li><a href="#support">Community & Support</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+      <section id="overview">
+        <h1>Oversight Documentation</h1>
+        <p>
+          Oversight is a high-speed terminal security intelligence engine designed to audit shell scripts, command buffers, and package diff streams before they execute on your system. It acts as an active safety layer between automated installation routines and manual code verification.
+        </p>
+
+        <div class="media-showcase">
+          <img src="assets/oversight1.gif" alt="Oversight TUI in Action">
+          <div class="media-caption">Oversight auditing a script buffer and displaying dynamic risk telemetry.</div>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">The Core Philosophy</div>
+          Most modern system compromises happen during installation prompts or unattended package upgrades. Oversight visualises suspicious patterns, explains security risks in plain language, and provides an interactive verification pager for manual audit.
+        </div>
+      </section>
+
+      <section id="quickstart">
+        <h2>Quick Start</h2>
+        <p>Get up and running in seconds with standard Arch Linux packaging or automated source installation:</p>
+
+        <h3>1. Install via AUR</h3>
+        <pre><code>yay -S oversight-git</code></pre>
+
+        <h3>2. Audit Any Target</h3>
+        <pre><code># Audit a local shell script
+oversight ./install.sh
+
+# Audit a remote installer safely in memory
+oversight https://raw.githubusercontent.com/example/repo/main/install.sh
+
+# Pipe standard input directly into the auditor
+git diff | oversight</code></pre>
+      </section>
+
+      <section id="installation">
+        <h2>Installation Guide</h2>
+        <p>Oversight is compiled in Rust with minimal dependencies for maximum binary isolation.</p>
+
+        <h3>Native Dependencies</h3>
+        <ul>
+          <li><strong>Rust & Cargo:</strong> Rust 1.80+ (Edition 2024 recommended).</li>
+          <li><strong>OpenSSL:</strong> System library for secure TLS/SSL network queries.</li>
+        </ul>
+
+        <h3>Option 1: Arch User Repository (AUR)</h3>
+        <pre><code># Using Yay
+yay -S oversight-git
+
+# Using Paru
+paru -S oversight-git
+
+# Manual PKGBUILD build
+git clone https://aur.archlinux.org/oversight-git.git
+cd oversight-git
+makepkg -si</code></pre>
+
+        <h3>Option 2: Automated Installer from Source</h3>
+        <pre><code>git clone https://github.com/Rakosn1cek/oversight.git
+cd oversight
+chmod +x install.sh
+./install.sh</code></pre>
+
+        <p>The installer compiles the binary, installs it to <code>~/.local/bin/oversight</code>, copies security signatures to <code>~/.local/share/oversight/rules.json</code>, and adds preexec shell hooks to your profile.</p>
+
+        <h3>File Locations</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Path</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Engine Binary</td>
+              <td><code>~/.local/bin/oversight</code></td>
+              <td>Main executable</td>
+            </tr>
+            <tr>
+              <td>Signature Database</td>
+              <td><code>~/.local/share/oversight/rules.json</code></td>
+              <td>Security rules and patterns</td>
+            </tr>
+            <tr>
+              <td>Shell Hooks</td>
+              <td><code>~/.local/share/oversight/oversight.[zsh|bash|fish]</code></td>
+              <td>Command interception wrappers</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="features">
+        <h2>Feature Breakdown</h2>
+
+        <h3>Dynamic Multi-Stream Tab Layout</h3>
+        <p>
+          During batch package upgrades, Oversight dynamically scans incoming unified git patch streams. It separates combined diffs into isolated tabs for each package, pulling in local build assets like <code>PKGBUILD</code>, <code>.install</code> scripts, and patches.
+        </p>
+
+        <h3>Shannon Entropy Obfuscation Scanner</h3>
+        <p>
+          Calculates string entropy across clean script tokens. High-entropy blocks trigger alerts for packed binaries, encoded base64 blobs, and encrypted shellcode that traditional regex tools miss.
+        </p>
+
+        <h3>Security Heat Map Sidebar</h3>
+        <p>
+          A real-time vertical minimap on the right flank plots threat coordinates across the file. It includes a responsive cyan scroll thumb indicator (<code>█</code>) to orient the user within long documents.
+        </p>
+
+        <h3>Vulnerability Intelligence via OSV.dev</h3>
+        <p>
+          When package installer invocations are detected, Oversight queries the Open Source Vulnerabilities (OSV) database in real time to alert you to known CVEs before the installation command executes.
+        </p>
+
+        <h3>Clean Stream Pager Fallback</h3>
+        <p>
+          When audited text passes with zero risk flags, Oversight automatically acts as an interactive text pager. Paged content wraps smoothly and supports line-by-line scrolling and full-page stepping.
+        </p>
+
+        <div class="media-showcase">
+          <img src="assets/oversight1.png" alt="Oversight Interface Overview">
+          <div class="media-caption">The Oversight four-column audit matrix with findings, viewport, highlights, and minimap.</div>
+        </div>
+      </section>
+
+      <section id="behavioural">
+        <h2>Behavioural Assessment Models</h2>
+        <p>
+          Oversight links individual script events across execution lifecycles to detect sophisticated malware chains:
+        </p>
+
+        <ul>
+          <li><strong>Malicious Lifecycle Sequence:</strong> Detects the classic trojan pattern combining remote fetch (<code>curl</code>/<code>wget</code>), permissions modification (<code>chmod +x</code>), and immediate execution.</li>
+          <li><strong>Build-Time Dependency Injection:</strong> Flags secondary installer commands (<code>npm install</code>, <code>yarn add</code>, <code>bun install</code>) running inside package build profiles.</li>
+          <li><strong>Anti-Forensics & Stealth:</strong> Monitors self-deletion attempts (<code>rm $0</code>), silent standard error redirection (<code>> /dev/null</code>), and RAM-only paths (<code>/dev/shm</code>).</li>
+          <li><strong>Persistence Hooks:</strong> Flags unexpected modifications to <code>crontab</code>, shell runcom files (<code>.bashrc</code>, <code>.zshrc</code>), or systemd unit definitions.</li>
+          <li><strong>AUR Orphan Status:</strong> Detects unmaintained packages lacking an active AUR maintainer, preventing adoption of hijacked components.</li>
+        </ul>
+      </section>
+
+      <section id="rules-engine">
+        <h2>Rules Engine & Custom Signatures</h2>
+        <p>
+          Security rules reside in <code>rules.json</code>. You can customise or extend detection patterns without touching the Rust source code:
+        </p>
+
+        <pre><code>{
+  "name": "Destructive File Removal",
+  "category": "System Integrity",
+  "pattern": "\\brm\\s+-[rfv]*[rf][rfv]*\\s+/(?:etc|bin|usr|var|home|root)?",
+  "severity": "Critical",
+  "explanation": "Detects attempts to recursively delete critical system directories.",
+  "reference": "MITRE ATT&CK T1485",
+  "fix": "Verify that target directories are scoped locally and never reference root paths."
+}</code></pre>
+
+        <p>Severity categories range from <strong>Low</strong> (informational) to <strong>Medium</strong>, <strong>High</strong>, and <strong>Critical</strong>, feeding into the weighted 0 to 100 risk score.</p>
+      </section>
+
+      <section id="shell-hooks">
+        <h2>Shell Interception & Live Protection</h2>
+        <p>
+          Oversight includes non-invasive shell wrappers for Zsh, Bash, and Fish. When an interactive command matches high-risk patterns (such as piped web installers), an interactive menu prompts you to analyse the command before execution.
+        </p>
+
+        <pre><code># Shell hook evaluation pattern
+((curl|wget).*https?://[^ ]+|rm +-rf +/)</code></pre>
+      </section>
+
+      <section id="pager-guide">
+        <h2>AUR Helper & Pager Integration</h2>
+        <p>
+          To integrate Oversight directly into your package upgrade workflow, configure your helper as described below:
+        </p>
+
+        <h3>Option A: Dedicated AUR Helper Setup (Targeted)</h3>
+
+        <h4>For Yay</h4>
+        <p>Append the following alias to <code>~/.zshrc</code> or <code>~/.bashrc</code>:</p>
+        <pre><code>alias yay="yay --diffpager oversight"</code></pre>
+
+        <h4>For Paru</h4>
+        <p>Add the following block to <code>~/.config/paru/paru.conf</code>:</p>
+        <pre><code>[options]
+Pager = oversight
+CombinedUpgrade</code></pre>
+
+        <h4>For Other Helpers (e.g. Shelly)</h4>
+        <p>Set the helper variable so Oversight locates correct cache paths:</p>
+        <pre><code>export AUDIT_HELPER="shelly"</code></pre>
+
+        <h3>Option B: Universal System Pager Setup</h3>
+        <p>To use Oversight for all terminal paging operations including manual pages and git diffs, add these exports to your shell profile:</p>
+        <pre><code>export PAGER="oversight"
+export MANPAGER="oversight"</code></pre>
+      </section>
+
+      <section id="pager-effects">
+        <h2>Pager Stream Semantics</h2>
+        <p>When used as a system pager, Oversight adapts dynamically depending on the input stream:</p>
+        <ul>
+          <li><strong>Clean Manual Pages:</strong> Commands like <code>man pacman</code> parse cleanly with zero security flags. Oversight renders the document inside the viewport with full keyboard and mouse scroll navigation.</li>
+          <li><strong>Official Mirror Upgrades:</strong> Standard repository mirror updates lack Git patch headers. Oversight automatically falls back to flat text buffer mode, displaying a single clean audit verdict.</li>
+          <li><strong>Piped Shell Streams:</strong> When piped via standard input, shell wrappers pass streams directly through to the binary without requiring command arguments.</li>
+        </ul>
+      </section>
+
+      <section id="keybinds">
+        <h2>Keyboard & Controls Reference</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Key / Input</th>
+              <th>Context</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>↓</kbd> / <kbd>↑</kbd></td>
+              <td>Pager Mode / Tabs</td>
+              <td>Scroll viewport line by line</td>
+            </tr>
+            <tr>
+              <td><kbd>↓</kbd> / <kbd>↑</kbd></td>
+              <td>Findings View</td>
+              <td>Navigate between security findings</td>
+            </tr>
+            <tr>
+              <td><kbd>j</kbd> / <kbd>k</kbd></td>
+              <td>All Views</td>
+              <td>Scroll viewport line by line</td>
+            </tr>
+            <tr>
+              <td><kbd>PageDown</kbd> / <kbd>Space</kbd></td>
+              <td>All Views</td>
+              <td>Scroll viewport down by one page</td>
+            </tr>
+            <tr>
+              <td><kbd>PageUp</kbd> / <kbd>b</kbd></td>
+              <td>All Views</td>
+              <td>Scroll viewport up by one page</td>
+            </tr>
+            <tr>
+              <td><kbd>d</kbd> / <kbd>Ctrl+d</kbd></td>
+              <td>All Views</td>
+              <td>Scroll viewport down by half page</td>
+            </tr>
+            <tr>
+              <td><kbd>u</kbd> / <kbd>Ctrl+u</kbd></td>
+              <td>All Views</td>
+              <td>Scroll viewport up by half page</td>
+            </tr>
+            <tr>
+              <td><kbd>Home</kbd> / <kbd>g</kbd> / <kbd>←</kbd></td>
+              <td>All Views</td>
+              <td>Jump to top of stream</td>
+            </tr>
+            <tr>
+              <td><kbd>End</kbd> / <kbd>G</kbd></td>
+              <td>All Views</td>
+              <td>Jump to bottom of stream</td>
+            </tr>
+            <tr>
+              <td><kbd>Tab</kbd></td>
+              <td>Multi-Package</td>
+              <td>Cycle through package tabs</td>
+            </tr>
+            <tr>
+              <td><kbd>0</kbd> to <kbd>9</kbd></td>
+              <td>Multi-Package</td>
+              <td>Jump directly to tab index</td>
+            </tr>
+            <tr>
+              <td><kbd>s</kbd></td>
+              <td>Findings View</td>
+              <td>Toggle suppression of selected finding</td>
+            </tr>
+            <tr>
+              <td>Mouse Wheel</td>
+              <td>All Views</td>
+              <td>Scroll viewport smoothly by 3 lines</td>
+            </tr>
+            <tr>
+              <td><kbd>q</kbd> / <kbd>Esc</kbd></td>
+              <td>All Views</td>
+              <td>Exit interface</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="advisory">
+        <h2>Security Advisory & Limitations</h2>
+        <div class="callout callout-warning">
+          <div class="callout-title">Advisory Notice</div>
+          Oversight is an educational security assistant and audit intelligence tool. While it uses heuristic entropy algorithms and regex signatures, automated scanners cannot replace manual code inspection for mission-critical deployments. Always verify highlighted segments before confirming execution.
+        </div>
+      </section>
+
+      <section id="support">
+        <h2>Community & Contributions</h2>
+        <p>Contributions, rule submissions, and feedback are welcome:</p>
+        <ul>
+          <li><strong>GitHub Repository:</strong> <a href="https://github.com/Rakosn1cek/oversight" target="_blank" rel="noopener">Rakosn1cek/oversight</a></li>
+          <li><strong>Discord Community:</strong> <a href="https://discord.gg/cv3ZEYK5Na" target="_blank" rel="noopener">Join Rakosn1cek Hub</a></li>
+          <li><strong>AUR Package:</strong> <a href="https://aur.archlinux.org/packages/oversight-git" target="_blank" rel="noopener">oversight-git</a></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>Oversight Security Intelligence Engine &bull; Released under MIT License &bull; Rakosn1cek</p>
+  </footer>
+
+</body>
+</html>
